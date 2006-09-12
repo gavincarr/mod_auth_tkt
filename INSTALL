@@ -1,0 +1,87 @@
+Installation
+============
+
+Requires: an apache with DSO support, either 1.3.x, or 2.0.x.
+
+  $ ./configure --apxs=/path/to/apxs
+  $ make
+  $ make test         # (can take a while due to timeout tests)
+  # make install 
+
+
+
+Basic Configuration
+-------------------
+
+1. Copy conf/02_auth_tkt.conf to an apache conf include directory like
+   /etc/httpd/conf.d (or include explicitly from your httpd.conf),
+   and edit for your environment. See also conf/auth_tkt.example.conf 
+   for a longer annotated version.
+
+
+2. Set up your login pages. If you want to use the supplied CGI scripts
+   rather than rolling your own, copy the files in the 'cgi' directory
+   somewhere useful e.g.
+
+     cp -rp cgi /var/www/pub
+
+   The scripts requires perl and the CGI perl module. You will need to 
+   edit the config sections at the top of the CGIs to match your cookie 
+   settings, and add an authentication function to do the actual 
+   username/password authentication against your repository of choice. 
+   See the scripts themselves for more details, and conf/cgi.conf for 
+   example configs for the login script area.
+
+
+3. If you're using mod_auth_tkt on the open internet (rather than on
+   a private network) you should probably set 'TKTAuthIgnoreIP on', at
+   least initially. This avoids a whole class of weird problems that
+   aren't necessarily obvious (ISP transparent proxies, for instance). 
+   If you have a very constrained set of users you may be able turn it 
+   off later after you've got everything working.
+
+
+
+Advanced Configuration Options
+------------------------------
+
+1. Guest logins: the supplied login CGI script has support for three
+   different modes of operation: standard login mode, where a username
+   and password are typically authenticated against a user repository
+   of some kind; guest mode, where users are automatically authenticated 
+   and given some kind of special 'guest' username; and autologin mode,
+   used for cross-domain environments (see following). To enable guest
+   logins, simply create a symbol link to 'login.cgi' called 'guest.cgi'
+   (or rename it if you don't require login functionality), and point
+   TKTAuthLoginURL to your guest.cgi script (you can still have an 
+   explicit 'Login' link pointing to login.cgi if you're using that).
+
+
+2. Multi-domain logins: although cookies are domain-specific,
+   mod_auth_tkt now supports multi-domain logins and logouts by
+   passing the authentication ticket via the URL to a new domain.
+   To setup multi-domain logins, one of your domains should be 
+   designated the primary domain, and your login and logout scripts 
+   should be configured as normal for that domain - test your primary
+   domain is working as desired. Then, if you are using the supplied 
+   CGI scripts, you should use 'autologin' mode for the secondary 
+   domains, which basically just looks for an existing ticket (on the
+   primary domain) and passes it via a URL parameter back to your
+   secondary domain. Autologin mode is configured by creating a 
+   symbolic link to 'login.cgi' called 'autologin.cgi' and using the 
+   autologin.cgi version in your TKTAuthLoginURL. Something like the
+   following should then work for all your domains:
+
+      AuthType Basic
+      require valid-user
+      TKTAuthCookieName auth_tkt
+      TKTAuthLoginURL https://www.mydomain.com/pub/autologin.cgi
+      TKTAuthTimeoutMin 60
+
+   (Note that no TKTAuthDomain is set, because this fragment is being 
+    used for multiple domains. TKTAuthDomain defaults to the parent 
+    domain when undefined - .mydomain.com in this case - which is 
+    usually what you want.)
+   
+
+

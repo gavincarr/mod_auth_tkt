@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+package MAT::TestRun;
+use base 'Apache::TestRun';
+use Apache::TestConfig;
+
+__PACKAGE__->new->run(@ARGV);
+
+sub pre_configure
+{
+  my $self = shift;
+  Apache::TestConfig::autoconfig_skip_module_add('mod_auth_tkt.c');
+  $self->SUPER::pre_configure();
+}
+
+
+# arch-tag: 4f4eb9e2-10b7-4c44-8859-3c690c1bff66

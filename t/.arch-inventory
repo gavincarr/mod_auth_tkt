@@ -1,0 +1,3 @@
+precious ^(logs|conf|.*\.x)$
+
+# arch-tag: b984744e-b9c6-4776-892c-8f1b0526adca

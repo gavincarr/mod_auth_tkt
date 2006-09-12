@@ -1,0 +1,28 @@
+/* mod_auth_tkt example css */
+
+BODY {
+    font-family: arial, helvetica, sans-serif;
+    font-size: small;
+}
+
+P, TH, TD {
+    font-family: arial, helvetica, sans-serif;
+    font-size: small;
+}
+
+H1, H2, H3, H4, H5, H6 { color: #006; }
+H1 { font-size: x-large; }
+H2 { font-size: large; }
+H3 { font-size: medium; }
+
+.warning { color: #c00; font-size: medium; font-weight: bold; }
+
+TABLE {
+    background-color: #eee;
+    color: #666;
+    border: 1px solid #ccc;
+    padding: 20px;
+}
+
+
+/* arch-tag: ac35e093-c2c0-4994-bc18-2d25715b1192 */

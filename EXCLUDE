@@ -1,0 +1,17 @@
+EXCLUDE
+NOSYMLINKS
+TODO
+{arch}
+,,*
+*.swp
+.libs
+mod_auth_tkt.o 
+mod_auth_tkt.so 
+mod_auth_tkt.la 
+mod_auth_tkt.lo 
+mod_auth_tkt.slo
+t/conf/*
+t/logs/*
+t/modules/*
+t/.configure
+t/.testlong

@@ -1,0 +1,3 @@
+AuthType Basic
+require valid-user
+TKTAuthLoginURL http://localhost/pub/login.cgi

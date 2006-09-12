@@ -1,0 +1,242 @@
+
+LoadModule auth_tkt_module modules/mod_auth_tkt.so
+
+# Test secret
+TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
+
+# secret_basic - minimal config
+<Location /secret_basic>
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL http://localhost/pub/login.cgi
+</Location>
+
+# secret_ignore_ip - ignore ip testing
+<Location /secret_ignore_ip>
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL http://localhost/pub/login.cgi
+  TKTAuthIgnoreIP on
+</Location>
+
+# secret_tokens - token testing
+<Location /secret_tokens>
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL http://localhost/pub/login.cgi
+  TKTAuthToken finance
+  TKTAuthToken admin
+</Location>
+
+# secret_guest - guest testing (uses a CGI)
+<Location /secret_guest>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+</Location>
+
+# secret_guest_nocookie - guest testing, no cookies (uses a CGI)
+<Location /secret_guest_nocookie>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie off
+</Location>
+
+# secret_guest_nocookie2 - guest testing, no cookies (uses a CGI)
+<Location /secret_guest_nocookie2>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+</Location>
+
+# secret_guest_user - guest user testing (uses a CGI)
+<Location /secret_guest_user>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser aguestbyanyothername
+</Location>
+
+# secret_guest_user_uuid1 - simple guest user uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid1>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-%U
+</Location>
+
+# secret_guest_user_uuid2 - guest user size-limited uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid2>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-12U
+</Location>
+
+# secret_guest_user_uuid3 - guest user size-limited uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid3>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-%12U
+</Location>
+
+# secret_guest_user_uuid4 - guest user size-limited uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid4>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-%0U
+</Location>
+
+# secret_guest_user_uuid5 - guest user size-limited uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid5>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-%1U
+</Location>
+
+# secret_guest_user_uuid6 - guest user size-limited uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid6>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-%24U
+</Location>
+
+# secret_guest_user_uuid7 - guest user size-limited uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid7>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-%36U
+</Location>
+
+# secret_guest_user_uuid8 - guest user size-limited uuid testing (uses a CGI)
+<Location /secret_guest_user_uuid8>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthGuestUser guest-%50U
+</Location>
+
+# secret_cookie_secure1
+<Location /secret_cookie_secure1>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthCookieSecure on
+</Location>
+
+# secret_cookie_secure2
+<Location /secret_cookie_secure2>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  TKTAuthCookieSecure off
+</Location>
+
+# secret_noguest - guest exclusion testing (uses a CGI)
+<Location /secret_noguest>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL http://localhost/pub/login.cgi
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie on
+  # Allow only tickets with a 'user' token i.e. no guests
+  TKTAuthToken user
+</Location>
+
+# secret_timeout - timeout testing
+<Location /secret_timeout>
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL http://localhost/pub/login.cgi
+  TKTAuthTimeoutURL http://localhost/pub/timeout.cgi
+  TKTAuthPostTimeoutURL http://localhost/pub/timeout.cgi?post=1
+  TKTAuthTimeout 60
+  TKTAuthTimeoutRefresh 0
+</Location>
+
+# secret_timeout_refresh - timeout refresh testing
+<Location /secret_timeout_refresh>
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL http://localhost/pub/login.cgi
+  TKTAuthTimeoutURL http://localhost/pub/timeout.cgi
+  TKTAuthTimeout 1m
+  # with 20s sleeps and a 1 minute, timeout refresh should be > .66
+  TKTAuthTimeoutRefresh .75
+</Location>
+
+# virtual host testing - with per-host secret
+<VirtualHost VHostLocalSecret>
+  TKTAuthSecret "vhostlocalsecret"
+  DocumentRoot @documentroot@/vhost_local_secret
+  <Location />
+    AuthType Basic
+    require valid-user
+    TKTAuthLoginURL http://localhost/pub/login.cgi
+  </Location>
+</VirtualHost>
+
+# virtual host testing - with global secret
+<VirtualHost VHostGlobalSecret>
+  DocumentRoot @documentroot@/vhost_global_secret
+  <Location />
+    AuthType Basic
+    require valid-user
+    TKTAuthLoginURL http://localhost/pub/login.cgi
+    TKTAuthDebug 3
+  </Location>
+</VirtualHost>
+
+# secret_htaccess - config via .htaccess file
+<Directory @documentroot@/secret_htaccess>
+  AllowOverride AuthConfig
+</Directory>
+
