@@ -1,2 +1,15 @@
 {arch}
 .arch-ids
+access_log
+error_log
+apache_test_config.pm
+extra.conf
+extra.conf.in
+httpd.conf
+mod_auth_tkt.3
+Makedefs
+mod_auth_tkt.la
+mod_auth_tkt.lo
+mod_auth_tkt.slo
+.libs
+t/htdocs/index.html
