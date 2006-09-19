@@ -159,7 +159,7 @@ $calc = DateTime->now(time_zone => 'GMT')->add(years => 2, months => 1, weeks =>
 printf "calc: %s\n", $calc->strftime("%Y-%m-%d");
 my $diff = $expires_dt - $calc;
 printf "diff: %s\n", $diff->delta_days;
-ok t_cmp(abs $diff->delta_days <= 1, qr/^[01]$/, 'cookie expires field years ok');
+ok t_cmp(abs $diff->delta_days, qr/^[012]$/, 'cookie expires field years ok (' . $diff->delta_days . ')');
 #ok t_cmp($expires, qr/^$calc/, 'cookie expires field years ok');
 
 

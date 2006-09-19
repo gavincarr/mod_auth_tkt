@@ -109,7 +109,8 @@ sub parse_conf
         if ($directive eq 'TKTAuthCookieExpires' || $directive eq 'TKTAuthTimeout') {
           $self->{$_} = $self->convert_time_seconds($merge{$directive});
         }
-        else {
+        # Don't allow TKTAuthDebug to turn on debugging here
+        elsif ($directive ne 'TKTAuthDebug') {
           $self->{$_} = $merge{$directive};
         }
     }
