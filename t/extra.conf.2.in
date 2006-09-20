@@ -320,6 +320,22 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
   TKTAuthTimeoutRefresh .75
 </Location>
 
+# secret_timeout_guest_fallback - timeout testing with guest fallback on (CGI)
+<Location /secret_timeout_guest_fallback>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL http://localhost/pub/login.cgi
+  TKTAuthTimeoutURL http://localhost/pub/timeout.cgi
+  TKTAuthPostTimeoutURL http://localhost/pub/timeout.cgi?post=1
+  TKTAuthTimeout 60
+  TKTAuthTimeoutRefresh 0
+  TKTAuthGuestLogin on
+  TKTAuthGuestCookie off
+  TKTAuthGuestFallback on
+</Location>
+
 # virtual host testing - with per-host secret
 <VirtualHost VHostLocalSecret>
   TKTAuthSecret "vhostlocalsecret"
