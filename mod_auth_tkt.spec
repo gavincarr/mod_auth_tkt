@@ -50,9 +50,9 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d
 mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
 mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
 if [ %{httpd} == apache ]; then
-  apxs1 -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
+  /usr/sbin/apxs1 -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
 else
-  apxs -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
+  /usr/sbin/apxs -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
 fi
 install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
 cp -pr cgi/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
