@@ -1,5 +1,5 @@
 
-# Use '--define apache 1' to build an 'mod_auth_tkt1' package for apache1
+# Use "--define='apache 1'" to build an 'mod_auth_tkt1' package for apache1
 %define httpd httpd
 %define name mod_auth_tkt
 %{?apache:%define httpd apache}
@@ -8,7 +8,7 @@
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
 Version: 2.0.0rc1
-Release: 1%{?dist}.of
+Release: 2%{?dist}.of
 License: GPL
 Group: Applications/System
 Source: http://www.openfusion.com.au/labs/dist/mod_auth_tkt-%{version}.tar.gz
@@ -56,6 +56,9 @@ else
 fi
 install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
 cp -pr cgi/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
+rm -r $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi/Apache
+mkdir -p $RPM_BUILD_ROOT/%{perl_vendorarch}/Apache
+cp cgi/Apache/* $RPM_BUILD_ROOT/%{perl_vendorarch}/Apache
 cp -pr contrib/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
 cp -pr README* INSTALL LICENSE ChangeLog CREDITS $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}
 cd doc
@@ -67,11 +70,14 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_libdir}/%{httpd}
+%{perl_vendorarch}/Apache/AuthTkt.pm
 %doc /usr/share/doc/%{name}-%{version}
 %attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/*
 /usr/share/man/*
 
 %changelog
+* Wed Nov 01 2006 Charlie Brady <charlie_brady@mitel.com> 2.0.0rc1-2
+- Move Apache::AuthTkt into perl's vendorarch directory.
 
 * Mon Apr 10 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc1
 - Add mod_auth_tkt man page.

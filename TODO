@@ -58,7 +58,10 @@
 + update spec file
 + add examples to mod_auth_tkt man page
 
+- add initial apache 2.2 support based on Joost Cassee's patch
+- add Charlie Brady's X-Forwarded-For patches
 - add a writeable test on manpage directory, for local installs by unpriv user
+
 - look into Tom Seeley's 'require user joe' problem, esp. wrt return codes
   back to Apache
 - consider adding a directory-level TKTAuthDirSecret, to allow pure .htaccess 

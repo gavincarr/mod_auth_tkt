@@ -446,7 +446,7 @@ Gavin Carr <gavin@openfusion.com.au>
 
 =head1 COPYRIGHT
 
-Copyright 2001-2005 Open Fusion Pty Ltd. All Rights Reserved.
+Copyright 2001-2006 Open Fusion Pty Ltd. All Rights Reserved.
 
 This program is free software. You may copy or redistribute it under the 
 same terms as perl itself.
