@@ -2,6 +2,8 @@ Charlie Brady <charlie_brady@mitel.com> provided a patch to the
 spec file to install the Apache::AuthTkt perl module into the perl
 vendor tree. Version 2.0.0rc2.
 
+
+
 Michael Peters <mpeters@plusthree.com> provided a patch to add an
 additional TKTAuthTimeoutPostURL directive to allow timeouts on 
 POSTs to be handled differently (since redirects back aren't sensible).

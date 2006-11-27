@@ -59,6 +59,7 @@ typedef struct  {
   int guest_login;
   int guest_cookie;
   char *guest_user;
+  int guest_fallback;
   int debug;
 } auth_tkt_dir_conf;
 
@@ -129,6 +130,7 @@ create_auth_tkt_config(apr_pool_t *p, char* path)
   conf->guest_login = -1;
   conf->guest_cookie = -1;
   conf->guest_user = NULL;
+  conf->guest_fallback = -1;
   conf->debug = -1;
   return conf;  
 }
@@ -160,6 +162,7 @@ merge_auth_tkt_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
   conf->guest_login = (subdir->guest_login >= 0) ? subdir->guest_login : parent->guest_login;
   conf->guest_cookie = (subdir->guest_cookie >= 0) ? subdir->guest_cookie : parent->guest_cookie;
   conf->guest_user = (subdir->guest_user) ? subdir->guest_user : parent->guest_user;
+  conf->guest_fallback = (subdir->guest_fallback >= 0) ?  subdir->guest_fallback : parent->guest_fallback;
   conf->debug = (subdir->debug >= 0) ? subdir->debug : parent->debug;
 
   return conf;
@@ -414,6 +417,9 @@ static const command_rec auth_tkt_cmds[] =
   AP_INIT_TAKE1("TKTAuthGuestUser", ap_set_string_slot, 
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_user),
     OR_AUTHCFG, "username to use for guest logins"),
+  AP_INIT_FLAG("TKTAuthGuestFallback", ap_set_flag_slot,
+    (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_fallback),
+    OR_AUTHCFG, "whether to fall back to guest on an expired ticket (default off)"),
   AP_INIT_ITERATE("TKTAuthDebug", set_auth_tkt_debug, 
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, debug),
     OR_AUTHCFG, "debug level (1-3, higher for more debug output)"),
@@ -1096,6 +1102,97 @@ redirect(request_rec *r, char *location)
   return HTTP_TEMPORARY_REDIRECT;
 }
 
+/* Determine the guest username */
+static char *
+get_guest_uid(request_rec *r, auth_tkt_dir_conf *conf)
+{
+#ifndef APACHE13
+  char *guest_user;
+  int guest_user_length;
+  apr_uuid_t *uuid;
+  char *uuid_str, *uuid_length_str;
+  regex_t *uuid_regex;
+  regmatch_t regm[UUID_SUBS];
+  int uuid_length = -1;
+  char *uuid_pre, *uuid_post;
+#endif
+
+  /* no guest user specified via config, use the default */
+  if (! conf->guest_user) {
+    return DEFAULT_GUEST_USER;
+  }
+
+#ifdef APACHE13
+  /* We don't support %U under apache1 at this point */
+  return conf->guest_user;
+#else
+
+  /* use UUID if configured */
+  guest_user = apr_pstrdup(r->pool, conf->guest_user);
+  uuid_regex = ap_pregcomp(r->pool, "%([0-9]*)U", 0);
+  if (!ap_regexec(uuid_regex, guest_user, UUID_SUBS, regm, 0)) {
+    /* Check whether a UUID length was specified */
+    if (regm[1].rm_so != -1) {
+      uuid_length_str = ap_pregsub(r->pool, "$1", guest_user,
+        UUID_SUBS, regm);
+      if (uuid_length_str) 
+        uuid_length = atoi(uuid_length_str);
+    }
+    if (uuid_length <= 0 || uuid_length > APR_UUID_FORMATTED_LENGTH) {
+      uuid_length = APR_UUID_FORMATTED_LENGTH;
+    }
+    if (conf->debug >= 1) {
+      ap_log_rerror(APLOG_MARK, APLOG_INFO, APR_SUCCESS, r, 
+        "TKT: %%U found in guest user (length %d)", uuid_length);
+    }
+    /* Generate the UUID */
+    uuid = apr_palloc(r->pool, sizeof(*uuid));
+    uuid_str = apr_palloc(r->pool, APR_UUID_FORMATTED_LENGTH + 1);
+    apr_uuid_get(uuid);
+    apr_uuid_format(uuid_str, uuid);
+    if (uuid_length < APR_UUID_FORMATTED_LENGTH) 
+      uuid_str[uuid_length] = '\0';
+    /* Generate the new guest_user string */
+    guest_user_length = strlen(guest_user);
+    if (regm[0].rm_so > 1) {
+      guest_user[regm[1].rm_so-1] = '\0';
+      uuid_pre = guest_user;
+    }
+    else
+      uuid_pre = "";
+    if (regm[0].rm_eo < guest_user_length)
+      uuid_post = guest_user + regm[0].rm_eo;
+    else
+      uuid_post = "";
+
+    return apr_psprintf(r->pool, "%s%s%s", 
+      uuid_pre, uuid_str, uuid_post);
+  }
+
+  /* Otherwise, it's just a plain username. Return that. */
+  return conf->guest_user;
+#endif /* ! APACHE13 */
+}
+
+/* Set up the guest user info */
+static int 
+setup_guest(request_rec *r, auth_tkt_dir_conf *conf, auth_tkt *tkt)
+{
+  /* Only applicable if guest access on */
+  if (conf->guest_login <= 0) {
+    return 0;
+  }
+
+  tkt->uid = get_guest_uid(r, conf);
+  tkt->user_data = "";
+  tkt->tokens = "";
+  ap_log_rerror(APLOG_MARK, APLOG_INFO, APR_SUCCESS, r, 
+    "TKT: no valid ticket found - accepting as guest user '%s'", 
+      tkt->uid);
+
+  return 1;
+}
+
 /* ----------------------------------------------------------------------- */
 /* Debug routines */
 void 
@@ -1130,6 +1227,7 @@ dump_config(request_rec *r)
     fprintf(stderr,"TKTAuthGuestLogin: %d\n",           conf->guest_login);
     fprintf(stderr,"TKTAuthGuestCookie: %d\n",          conf->guest_cookie);
     fprintf(stderr,"TKTAuthGuestUser: %s\n",            conf->guest_user);
+    fprintf(stderr,"TKTAuthGuestFallback %d\n",         conf->guest_fallback);
     if (conf->auth_token->nelts > 0) {
       char ** auth_token = (char **) conf->auth_token->elts;
       int i;
@@ -1157,16 +1255,6 @@ auth_tkt_check(request_rec *r)
   int guest = 0;
   int timeout;
   char *url = NULL;
-#ifndef APACHE13
-  char *guest_user;
-  int guest_user_length;
-  apr_uuid_t *uuid;
-  char *uuid_str, *uuid_length_str;
-  regex_t *uuid_regex;
-  regmatch_t regm[UUID_SUBS];
-  int uuid_length = -1;
-  char *uuid_pre, *uuid_post;
-#endif
 
   dump_config(r);
 
@@ -1202,69 +1290,9 @@ auth_tkt_check(request_rec *r)
     ticket = get_cookie_ticket(r);
     if (! ticket || ! valid_ticket(r, "cookie", ticket, parsed)) {
       if (conf->guest_login > 0) {
-        guest = 1;
-        if (conf->guest_user) {
-#ifdef APACHE13
-          /* We don't support %U under apache1 at this point */
-          parsed->uid = conf->guest_user;
-#else
-          guest_user = apr_pstrdup(r->pool, conf->guest_user);
-          uuid_regex = ap_pregcomp(r->pool, "%([0-9]*)U", 0);
-          if (!ap_regexec(uuid_regex, guest_user, UUID_SUBS, regm, 0)) {
-            /* Check whether a UUID length was specified */
-            if (regm[1].rm_so != -1) {
-              uuid_length_str = ap_pregsub(r->pool, "$1", guest_user,
-                UUID_SUBS, regm);
-              if (uuid_length_str) 
-                uuid_length = atoi(uuid_length_str);
-            }
-            if (uuid_length <= 0 || uuid_length > APR_UUID_FORMATTED_LENGTH) {
-              uuid_length = APR_UUID_FORMATTED_LENGTH;
-            }
-            if (conf->debug >= 1) {
-              ap_log_rerror(APLOG_MARK, APLOG_INFO, APR_SUCCESS, r, 
-                "TKT: %%U found in guest user (length %d)", uuid_length);
-            }
-            /* Generate the UUID */
-            uuid = apr_palloc(r->pool, sizeof(*uuid));
-            uuid_str = apr_palloc(r->pool, APR_UUID_FORMATTED_LENGTH + 1);
-            apr_uuid_get(uuid);
-            apr_uuid_format(uuid_str, uuid);
-            if (uuid_length < APR_UUID_FORMATTED_LENGTH) 
-              uuid_str[uuid_length] = '\0';
-            /* Generate the new guest_user string */
-            guest_user_length = strlen(guest_user);
-            if (regm[0].rm_so > 1) {
-              guest_user[regm[1].rm_so-1] = '\0';
-              uuid_pre = guest_user;
-            }
-            else
-              uuid_pre = "";
-            if (regm[0].rm_eo < guest_user_length)
-              uuid_post = guest_user + regm[0].rm_eo;
-            else
-              uuid_post = "";
-            parsed->uid = apr_psprintf(r->pool, "%s%s%s", 
-              uuid_pre, uuid_str, uuid_post);
-          }
-          else {
-            parsed->uid = conf->guest_user;
-          }
-          /* With UUIDs, TKTAuthGuestCookie defaults to 'on' */
-          if (conf->guest_cookie == -1) {
-            conf->guest_cookie = 1;
-          }
-#endif
-        }
-        else {
-          parsed->uid = DEFAULT_GUEST_USER;
-        }
-        parsed->user_data = "";
-        parsed->tokens = "";
-        ap_log_rerror(APLOG_MARK, APLOG_INFO, APR_SUCCESS, r, 
-          "TKT: no valid ticket found - accepting as guest user '%s'", 
-            parsed->uid);
-      } else {
+        guest = setup_guest(r, conf, parsed);
+      }
+      if (! guest) {
         ap_log_rerror(APLOG_MARK, APLOG_INFO, APR_SUCCESS, r, 
           "TKT: no valid ticket found - redirecting to login url");
         return redirect(r, conf->login_url);
@@ -1272,21 +1300,27 @@ auth_tkt_check(request_rec *r)
     }
   }
 
+  /* Valid ticket, check timeout - redirect/timed-out if so */
+  if (! guest && ! check_timeout(r, parsed)) {
+    /* Timeout! Check for guest access and guest_fallback */
+    if (conf->guest_login > 0 && conf->guest_fallback > 0) {
+      guest = setup_guest(r, conf, parsed);
+    }
+    if (!guest) {
+      /* Special timeout URL can be defined for POST requests */
+      if (strcmp(r->method, "POST") == 0 && conf->post_timeout_url) {
+        url = conf->post_timeout_url;
+      }
+      else {
+        url = conf->timeout_url ? conf->timeout_url : conf->login_url;
+      }
+      return redirect(r, url);
+    }
+  }
+
   /* Valid ticket, check tokens - redirect/unauthorised if so */
   if (! check_tokens(r, parsed->tokens)) {
     return redirect(r, conf->unauth_url ? conf->unauth_url : conf->login_url);
-  }
-
-  /* Valid ticket, check timeout - redirect/timed-out if so */
-  if (! guest && ! check_timeout(r, parsed)) {
-    /* Special timeout URL can be defined for POST requests */
-    if (strcmp(r->method, "POST") == 0 && conf->post_timeout_url) {
-      url = conf->post_timeout_url;
-    }
-    else {
-      url = conf->timeout_url ? conf->timeout_url : conf->login_url;
-    }
-    return redirect(r, url);
   }
 
   /* If a new guest login and the guest_cookie flag is set, force a cookie refresh */

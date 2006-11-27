@@ -135,6 +135,15 @@ Default: 'guest'. Examples:
   TKTAuthGuestUser visitor
   TKTAuthGuestUser guest-%12U
 
+=item TKTAuthGuestFallback <boolean>
+
+Flag to indicate that a timed out user ticket should automatically
+fallback to 'guest' status, and issue a new guest ticket, instead 
+of redirecting to the TKTAuthTimeoutURL. Only makes sense with 
+TKTAuthGuestLogin on, of course.
+
+Default: off.
+
 =item TKTAuthTimeout <seconds>
 
 The ticket timeout period, in seconds. After this period, the ticket
