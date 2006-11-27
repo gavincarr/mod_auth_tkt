@@ -7,8 +7,8 @@
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
-Version: 2.0.0rc1
-Release: 2%{?dist}.of
+Version: 2.0.0rc2
+Release: 1%{?dist}.of
 License: GPL
 Group: Applications/System
 Source: http://www.openfusion.com.au/labs/dist/mod_auth_tkt-%{version}.tar.gz
@@ -76,6 +76,9 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 /usr/share/man/*
 
 %changelog
+* Wed Nov 28 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc2
+- Bump to version 2.0.0rc2.
+
 * Wed Nov 01 2006 Charlie Brady <charlie_brady@mitel.com> 2.0.0rc1-2
 - Move Apache::AuthTkt into perl's vendorarch directory.
 
