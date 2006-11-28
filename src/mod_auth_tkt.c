@@ -19,6 +19,9 @@
 #include "pcreposix.h"
 #define UUID_SUBS 2
 #endif
+#ifdef APACHE22
+#include "ap22_compat.h"
+#endif
 
 #define AUTH_COOKIE_NAME "auth_tkt"
 #define BACK_ARG_NAME "back"
