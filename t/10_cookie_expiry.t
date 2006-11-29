@@ -124,7 +124,7 @@ ok t_cmp($res->content, qr/^This is secret_guest, you are guest/i, 'accepted as 
 ($cookie) = ($jar->as_string =~ m/^(Set-Cookie3: auth_tkt=.*)$/);
 ($expires) = ($cookie =~ m/expires="?([^;]*?)"?;/) if $cookie;
 #print "expires: $expires\n";
-$calc = DateTime->now(time_zone => 'GMT')->add(months => 3)->strftime('%Y-%m');
+$calc = DateTime->now(time_zone => 'GMT')->add(days => 90)->strftime('%Y-%m-%d');
 #print "calc: $calc\n";
 ok t_cmp($expires, qr/^$calc/, 'cookie expires field months ok');
 
