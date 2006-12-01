@@ -1,7 +1,5 @@
 {arch}
 .arch-ids
-access_log
-error_log
 apache_test_config.pm
 extra.conf
 extra.conf.in
@@ -13,3 +11,4 @@ mod_auth_tkt.lo
 mod_auth_tkt.slo
 .libs
 t/htdocs/index.html
+t/logs/*
