@@ -1,6 +1,6 @@
-Charlie Brady <charlie_brady@mitel.com> provided a patch to the 
-spec file to install the Apache::AuthTkt perl module into the perl
-vendor tree. Version 2.0.0rc2.
+Charlie Brady <charlie_brady@mitel.com> provided patches to honour
+the X-Forwarded-Host header in cookie domains and back references, 
+if set (for use behind a proxy). Version 2.0.0rc2.
 
 Joost Cassee <joost@cassee.net> provide a patch to port mod_auth_tkt 
 to Apache 2.2 and provided help testing and debugging under that

@@ -573,11 +573,23 @@ cookie_match(void *result, const char *key, const char *cookie)
 char *
 get_domain(request_rec *r, auth_tkt_dir_conf *conf) 
 {
-  /* Default to server name if not explicitly set. Viljo Viitanen
+  /* Set the cookie domain to the first set of TKTAuthDomain,
+     X-Forwarded-Host, Host, or server hostname. Viljo Viitanen
      pointed out that using the wildcard domain is a security hole
      in the event that other servers on your domain are hostile. */
   char *domain = conf->auth_domain;
-  if (!domain) domain = (char *) r->hostname;
+  char *p;
+  if (!domain) domain = (char *) apr_table_get(r->headers_in, "X-Forwarded-Host");
+  if (!domain) domain = (char *) apr_table_get(r->headers_in, "Host");
+  if (domain) {
+    /* Ignore any trailing port in domain */
+    if ((p = ap_strchr(domain, ':'))) {
+      *p = '\0';
+    }
+  }
+  else {
+    domain = (char *) r->hostname;
+  }
   return domain;
 }
 
@@ -1051,8 +1063,10 @@ redirect(request_rec *r, char *location)
   }
 
   /* Build back URL */
-  /* Use Host header for host:port info if available */
-  hostinfo = apr_table_get(r->headers_in, "Host");
+  /* Use X-Forward-Host header for host:port info if available */
+  /* Failing that, use Host header */
+  hostinfo = apr_table_get(r->headers_in, "X-Forwarded-Host");
+  if (! hostinfo) hostinfo = apr_table_get(r->headers_in, "Host");
   if (! hostinfo) {
     /* Fallback to using r->hostname and the server port. This usually
        works, but behind a reverse proxy the port may well be wrong. 
