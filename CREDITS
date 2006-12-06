@@ -6,6 +6,10 @@ Joost Cassee <joost@cassee.net> provide a patch to port mod_auth_tkt
 to Apache 2.2 and provided help testing and debugging under that
 environment. Version 2.0.0rc2.
 
+Philip Garrett <Philip.Garrett@manheim.com> provided patches to
+implement the TKTAuthGuestFallback functionlity, allowing validated
+users to fallback to guests on ticket timeout. Version 2.0.0rc2.
+
 Michael Peters <mpeters@plusthree.com> provided a patch to add an
 additional TKTAuthTimeoutPostURL directive to allow timeouts on 
 POSTs to be handled differently (since redirects back aren't sensible).
