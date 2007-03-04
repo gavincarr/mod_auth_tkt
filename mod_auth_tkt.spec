@@ -5,6 +5,8 @@
 %{?apache:%define httpd apache}
 %{?apache:%define name mod_auth_tkt1}
 
+%define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
+
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
 Version: 2.0.0
@@ -24,8 +26,17 @@ AutoReq: no
 mod_auth_tkt provides lightweight, repository-agnostic, ticket-based
 authentication for Apache. It implements a single-signon framework that 
 works across multiple apache instances and multiple machines. The actual
-authentication requires a user-supplied CGI or script of some kind - the 
-package includes example CGI scripts in Perl.
+authentication requires a user-supplied CGI or script of some kind - see
+the mod_auth_tkt-cgi package for perl cgi versions.
+
+%package cgi
+Summary: CGI scripts for mod_auth_tkt apache authentication modules.
+Group: Applications/System
+Requires: %{name} = %{version}
+
+%description cgi
+Perl CGI scripts for use with mod_auth_tkt.
+
 
 %prep
 %setup -n mod_auth_tkt-%{version}
@@ -49,16 +60,19 @@ mkdir -p $RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d
 mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
 mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
+mkdir -p $RPM_BUILD_ROOT/var/www/pub
+mkdir -p $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
 if [ %{httpd} == apache ]; then
   /usr/sbin/apxs1 -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
 else
   /usr/sbin/apxs -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
 fi
 install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
+cp cgi/Apache/* $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
 cp -pr cgi/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
-rm -r $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi/Apache
-mkdir -p $RPM_BUILD_ROOT/%{perl_vendorarch}/Apache
-cp cgi/Apache/* $RPM_BUILD_ROOT/%{perl_vendorarch}/Apache
+rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi/Apache
+cp -pr cgi/* $RPM_BUILD_ROOT/var/www/pub
+rm -rf $RPM_BUILD_ROOT/var/www/pub/Apache
 cp -pr contrib/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
 cp -pr README* INSTALL LICENSE ChangeLog CREDITS $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}
 cd doc
@@ -70,13 +84,20 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_libdir}/%{httpd}
-%{perl_vendorarch}/Apache/AuthTkt.pm
+%{perl_vendorlib}/Apache/AuthTkt.pm
 %doc /usr/share/doc/%{name}-%{version}
 %attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/*
 /usr/share/man/*
 
+%files cgi
+%defattr(-,root,root)
+%config(noreplace)/var/www/pub/AuthTktConfig.pm
+%config(noreplace)/var/www/pub/tkt.css
+/var/www/pub/*.cgi
+
 %changelog
 * Mon Mar 05 2007 Gavin Carr <gavin@openfusion.com.au> 2.0.0
+- Add separate mod_auth_tkt-cgi package containing /var/www/pub tree.
 - Factor out cgi config settings into AuthTktConfig.pm.
 - Bump to version 2.0.0.
 
