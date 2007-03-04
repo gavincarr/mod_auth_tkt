@@ -7,7 +7,7 @@
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
-Version: 2.0.0rc2
+Version: 2.0.0
 Release: 1%{?dist}.of
 License: GPL
 Group: Applications/System
@@ -76,6 +76,10 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 /usr/share/man/*
 
 %changelog
+* Mon Mar 05 2007 Gavin Carr <gavin@openfusion.com.au> 2.0.0
+- Factor out cgi config settings into AuthTktConfig.pm.
+- Bump to version 2.0.0.
+
 * Wed Nov 28 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc2
 - Bump to version 2.0.0rc2.
 

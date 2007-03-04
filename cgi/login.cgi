@@ -9,23 +9,24 @@
 #   named symlinks to access the different behaviours. 
 # Modes:
 #   - login mode (default): request a username and password and test via
-#     $validate_sub - if successful, issue an auth ticket and redirect to 
-#     the back location
-#   - guest mode ('guest.cgi'): automatically issues an auth ticket a 
-#     special username (as defined in $guest_sub, default 'guest'), and 
-#     redirect to the back location (now largely obsolete - use 
-#     TKTAuthGuestLogin instead)
+#     $AuthTktConfig::validate_sub - if successful, issue an auth ticket 
+#     and redirect to the back location
 #   - autologin mode ('autologin.cgi'): [typically used to allow tickets 
 #     across multiple domains] if no valid auth ticket exists, redirect
 #     to the login (or guest) version; otherwise automatically redirect 
 #     to the back location passing the current auth ticket as a GET 
 #     argument. mod_auth_tkt (>= 1.3.8) will turn this new ticket into 
 #     an auth cookie for the new domain if none already exists.
+#   - guest mode ('guest.cgi'): [DEPRECATED - use TktAuthGuestLogin instead]
+#     automatically issues an auth ticket a special username (as defined in 
+#     $AuthTktConfig::guest_sub, default 'guest'), and redirect to the back 
+#     location 
 #
 
 use File::Basename;
 use lib dirname($ENV{SCRIPT_FILENAME});
 use Apache::AuthTkt 0.03;
+use AuthTktConfig;
 use CGI qw(:standard);
 use CGI::Cookie;
 use URI::Escape;
@@ -33,44 +34,10 @@ use URI;
 use strict;
 
 # ------------------------------------------------------------------------
-# Configure this section to taste
-
-# CSS stylesheet to use (optional)
-my $STYLESHEET = 'tkt.css';
-# Page title (optional)
-my $TITLE = '';
-# For autologin, mode to fallback to if autologin fails ('login' or 'guest')
-my $AUTOLOGIN_FALLBACK_MODE = 'login';
-# Boolean flag, whether to fallback to HTTP_REFERER for back link
-my $BACK_REFERER = 1;
-
-# For login mode (if used), setup username/password validation
-#   (modify or point $validate_sub somewhere appropriate).
-# The validation routine should return a true value (e.g. 1) if the 
-#   given username/password combination is valid, and a false value
-#   (e.g. 0) otherwise.
-# This version uses Apache::Htpasswd and a standard htpasswd file.
-sub validate
-{
-  my ($username, $password) = @_;
-  require Apache::Htpasswd;
-  my $ht = Apache::Htpasswd->new({ 
-    passwdFile => '/etc/httpd/conf/htpasswd', ReadOnly => 1 });
-  return $ht->htCheckPassword($username, $password);
-}
-my $validate_sub = \&validate;
-
-# For guest mode (if used), setup guest username
-#   Could use a counter or a random suffix etc.
-sub guest_user
-{
-  return 'guest';
-}
-my $guest_sub = \&guest_user;
+# Configuration settings in AuthTktConfig.pm
 
 # ------------------------------------------------------------------------
 # Main code begins
-my $debug = 0;
 my $at = Apache::AuthTkt->new(conf => $ENV{MOD_AUTH_TKT_CONF});
 my $q = CGI->new;
 my ($server_name, $server_port) = split /:/, $ENV{HTTP_HOST} if $ENV{HTTP_HOST};
@@ -83,7 +50,8 @@ my $probe = $q->cookie('auth_probe');
 my $back = $q->cookie($at->back_cookie_name) if $at->back_cookie_name;
 my $have_cookies = $ticket || $probe || $back || '';
 $back ||= $q->param($at->back_arg_name) if $at->back_arg_name;
-$back ||= $ENV{HTTP_REFERER} if $ENV{HTTP_REFERER} && $BACK_REFERER;
+$back ||= $ENV{HTTP_REFERER} 
+  if $ENV{HTTP_REFERER} && $AuthTktConfig::BACK_REFERER;
 if ($back && $back =~ m!^/!) {
   my $hostname = $server_name;
   my $port = $server_port;
@@ -132,7 +100,7 @@ my $set_cookie_redirect = sub {
 
   # Set (local) cookie, and redirect to $back
   print $q->header( -cookie => $cookie );
-  return 0 if $debug;
+  return 0 if $AuthTktConfig::DEBUG;
 
   my $b = URI->new($back);
   # If $back domain doesn't match $AUTH_DOMAIN, pass ticket via back GET param
@@ -192,7 +160,7 @@ elsif ($mode eq 'autologin') {
   }
   # Can't autologin - change mode to either guest or login
   else {
-    $mode = $AUTOLOGIN_FALLBACK_MODE;
+    $mode = $AuthTktConfig::AUTOLOGIN_FALLBACK_MODE;
   }
 }
 
@@ -201,10 +169,10 @@ unless ($fatal || $redirected) {
     $fatal = "AuthTkt error: " . $at->errstr;
   }
   elsif ($mode eq 'login') {
-    if ($username && $validate_sub->($username, $password)) {
+    if ($username && $AuthTktConfig::validate_sub->($username, $password)) {
 #     my $user_data = join(':', encrypt($password), time(), $ip_addr);
       my $user_data = join(':', time(), $ip_addr);    # Optional
-      my $tkt = $at->ticket(uid => $username, data => $user_data, ip_addr => $ip_addr, debug => $debug);
+      my $tkt = $at->ticket(uid => $username, data => $user_data, ip_addr => $ip_addr, debug => $AuthTktConfig::DEBUG);
       if (! @errors) {
         $redirected = $set_cookie_redirect->($tkt, $back);
         $fatal = "Login successful.";
@@ -217,7 +185,7 @@ unless ($fatal || $redirected) {
 
   elsif ($mode eq 'guest') {
     # Generate a guest ticket and redirect to $back
-    my $tkt = $at->ticket(uid => $guest_sub->(), ip_addr => $ip_addr);
+    my $tkt = $at->ticket(uid => $AuthTktConfig::guest_sub->(), ip_addr => $ip_addr);
     if (! @errors) {
       $redirected = $set_cookie_redirect->($tkt, $back);
       $fatal = "No back link found.";
@@ -225,14 +193,16 @@ unless ($fatal || $redirected) {
   }
 }
 
-my @style = $STYLESHEET ? ('-style' => { src => $STYLESHEET }) : ();
-$TITLE ||= "\u$mode Page";
+my @style = ();
+@style = ( '-style' => { src => $AuthTktConfig::STYLESHEET } )
+  if $AuthTktConfig::STYLESHEET;
+my $title = $AuthTktConfig::TITLE || "\u$mode Page";
 unless ($redirected) {
   # If here, either some kind of error or a login page
   if ($fatal) {
     print $q->header,
       $q->start_html(
-        -title => $TITLE,
+        -title => $title,
         @style,
       );
   }
@@ -241,7 +211,7 @@ unless ($redirected) {
     push @errors, qq(You are not authorised to access this area.) if $unauth;
     print $q->header,
       $q->start_html(
-        -title => $TITLE,
+        -title => $title,
         -onLoad => "getFocus()",
         @style,
         -script => qq(
@@ -252,11 +222,11 @@ function getFocus() {
   }
   print <<EOD;
 <div align="center">
-<h1>$TITLE</h1>
+<h1>$title</h1>
 <p class="warning">Authorized Use Only</p>
 EOD
 
-  if ($debug) {
+  if ($AuthTktConfig::DEBUG) {
     my $cookie_name = $at->cookie_name;
     my $back_cookie_name = $at->back_cookie_name || '';
     my $back_arg_name = $at->back_arg_name || '';

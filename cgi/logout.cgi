@@ -10,26 +10,17 @@
 use File::Basename;
 use lib dirname($ENV{SCRIPT_FILENAME});
 use Apache::AuthTkt 0.03;
+use AuthTktConfig;
 use CGI qw(:standard);
 use URI::Escape;
 use URI;
 use strict;
 
 # ------------------------------------------------------------------------
-# Configure this section to taste
-
-# CSS stylesheet to use (optional)
-my $STYLESHEET = 'tkt.css';
-# Page title (optional)
-my $TITLE = '';
-# Boolean flag, whether to fallback to HTTP_REFERER for back link
-my $BACK_REFERER = 1;
-# Additional cookies to clear on logout e.g. PHPSESSID
-my @NUKE_COOKIES = qw();
+# Configuration settings in AuthTktConfig.pm
 
 # ------------------------------------------------------------------------
 # Main code begins
-my $debug = 0;
 my $at = Apache::AuthTkt->new(conf => $ENV{MOD_AUTH_TKT_CONF});
 my $q = CGI->new;
 my ($server_name, $server_port) = split /:/, $ENV{HTTP_HOST};
@@ -38,7 +29,7 @@ $server_port ||= $ENV{SERVER_PORT};
 my $AUTH_DOMAIN = $at->domain || $server_name;
 my $back = $q->cookie($at->back_cookie_name) if $at->back_cookie_name;
 $back ||= $q->param($at->back_arg_name) if $at->back_arg_name;
-$back ||= $ENV{HTTP_REFERER} if $BACK_REFERER;
+$back ||= $ENV{HTTP_REFERER} if $AuthTktConfig::BACK_REFERER;
 if ($back && $back =~ m!^/!) {
   my $hostname = $server_name;
   my $port = $server_port;
@@ -53,7 +44,7 @@ my $back_html = escapeHTML($back) if $back;
 # Logout by resetting the auth cookie
 my @cookies = cookie(-name => $at->cookie_name, -value => '', -expires => '-1h', 
     ($AUTH_DOMAIN ? (-domain => $AUTH_DOMAIN) : ()));
-push @cookies, map { cookie(-name => $_, -value => '', -expires => '-1h') } @NUKE_COOKIES;
+push @cookies, map { cookie(-name => $_, -value => '', -expires => '-1h') } @AuthTktConfig::NUKE_COOKIES;
 
 my $redirected = 0;
 if ($back) {
@@ -64,7 +55,7 @@ if ($back) {
     $back .= $at->cookie_name . '=';
   }
 
-  if ($debug) {
+  if ($AuthTktConfig::DEBUG) {
     print $q->header(-cookie => \@cookies);
   }
 
@@ -89,19 +80,21 @@ else {
   print $q->header(-cookie => \@cookies);
 }
 
-my @style = $STYLESHEET ? ('-style' => { src => $STYLESHEET }) : ();
-$TITLE ||= 'Logout Page';
+my @style = ();
+@style = ( '-style' => { src => $AuthTktConfig::STYLESHEET } )
+  if $AuthTktConfig::STYLESHEET;
+my $title = $AuthTktConfig::TITLE || "Logout Page";
 unless ($redirected) {
   # If here, either some kind of error or no back ref found
   print $q->start_html(
-      -title => $TITLE,
+      -title => $title,
       @style,
     );
   print <<EOD;
 <div align="center">
-<h1>$TITLE</h1>
+<h1>$title</h1>
 EOD
-  if ($debug) {
+  if ($AuthTktConfig::DEBUG) {
     print <<EOD;
 <pre>
 back: $back
