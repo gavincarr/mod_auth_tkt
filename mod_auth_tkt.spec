@@ -33,6 +33,7 @@ the mod_auth_tkt-cgi package for perl cgi versions.
 Summary: CGI scripts for mod_auth_tkt apache authentication modules.
 Group: Applications/System
 Requires: %{name} = %{version}
+Prefix: /var/www/pub
 
 %description cgi
 Perl CGI scripts for use with mod_auth_tkt.
@@ -96,8 +97,8 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 /var/www/pub/*.cgi
 
 %changelog
-* Mon Mar 05 2007 Gavin Carr <gavin@openfusion.com.au> 2.0.0
-- Add separate mod_auth_tkt-cgi package containing /var/www/pub tree.
+* Mon Mar 05 2007 Gavin Carr <gavin@openfusion.com.au> 2.0.0-1.
+- Add separate mod_auth_tkt-cgi package containing /var/www/pub CGI scripts.
 - Factor out cgi config settings into AuthTktConfig.pm.
 - Bump to version 2.0.0.
 
