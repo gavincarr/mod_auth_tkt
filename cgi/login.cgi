@@ -47,11 +47,14 @@ my $AUTH_DOMAIN = $at->domain || $server_name;
 my @auth_domain = $AUTH_DOMAIN ? ( -domain => $AUTH_DOMAIN ) : ();
 my $ticket = $q->cookie($at->cookie_name);
 my $probe = $q->cookie('auth_probe');
-my $back = $q->cookie($at->back_cookie_name) if $at->back_cookie_name;
-my $have_cookies = $ticket || $probe || $back || '';
+my $back_cookie = $q->cookie($at->back_cookie_name) if $at->back_cookie_name;
+my $have_cookies = $ticket || $probe || $back_cookie || '';
+my $back = '';
+$back = $AuthTktConfig::FIXED_BACK_LOCATION if $AuthTktConfig::FIXED_BACK_LOCATION;
+$back ||= $back_cookie;
 $back ||= $q->param($at->back_arg_name) if $at->back_arg_name;
-$back ||= $ENV{HTTP_REFERER} 
-  if $ENV{HTTP_REFERER} && $AuthTktConfig::BACK_REFERER;
+$back = $AuthTktConfig::DEFAULT_BACK_LOCATION if $AuthTktConfig::DEFAULT_BACK_LOCATION;
+$back ||= $ENV{HTTP_REFERER} if $ENV{HTTP_REFERER} && $AuthTktConfig::BACK_REFERER;
 if ($back && $back =~ m!^/!) {
   my $hostname = $server_name;
   my $port = $server_port;

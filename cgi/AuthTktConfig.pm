@@ -14,7 +14,13 @@ our $STYLESHEET = 'tkt.css';
 # Page title (optional)
 our $TITLE = '';
 
-# Boolean flag, whether to fallback to HTTP_REFERER for back link
+# Fixed back location, overriding any set via back cookie or back arg
+our $FIXED_BACK_LOCATION = '';
+
+# Default back location, if none set via back cookie or back arg
+our $DEFAULT_BACK_LOCATION = '';
+
+# Boolean flag, whether to fallback to HTTP_REFERER for back location
 our $BACK_REFERER = 1;
 
 # For autologin, mode to fallback to if autologin fails ('login' or 'guest')
