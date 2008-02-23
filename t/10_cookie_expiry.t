@@ -138,7 +138,7 @@ ok t_cmp($res->content, qr/^This is secret_guest, you are guest/i, 'accepted as 
 ($cookie) = ($jar->as_string =~ m/^(Set-Cookie3: auth_tkt=.*)$/);
 ($expires) = ($cookie =~ m/expires="?([^;]*?)"?;/) if $cookie;
 #print "expires: $expires\n";
-$calc = DateTime->now(time_zone => 'GMT')->add(years => 1)->strftime('%Y-%m');
+$calc = DateTime->now(time_zone => 'GMT')->add(days => 365)->strftime('%Y-%m');
 #print "calc: $calc\n";
 ok t_cmp($expires, qr/^$calc/, 'cookie expires field years ok');
 
@@ -155,7 +155,7 @@ $expires =~ s/\s.*//;
 my @expires = split /-/, $expires;
 my $expires_dt = DateTime->new(year => $expires[0], month => $expires[1], day => $expires[2]);
 printf "expires: %s\n", $expires_dt->strftime("%Y-%m-%d");
-$calc = DateTime->now(time_zone => 'GMT')->add(years => 2, months => 1, weeks => 3, days => 4);
+$calc = DateTime->now(time_zone => 'GMT')->add(days => 365 * 2, months => 1, weeks => 3, days => 4);
 printf "calc: %s\n", $calc->strftime("%Y-%m-%d");
 my $diff = $expires_dt - $calc;
 printf "diff: %s\n", $diff->delta_days;
