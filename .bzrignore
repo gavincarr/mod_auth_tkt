@@ -12,3 +12,4 @@ mod_auth_tkt.slo
 .libs
 t/htdocs/index.html
 t/logs/*
+*.loT
