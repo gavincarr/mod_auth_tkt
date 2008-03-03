@@ -6,6 +6,7 @@ use Apache::TestConfig;
 
 __PACKAGE__->new->run(@ARGV);
 
+# See 'perldoc Apache::TestRun'
 sub pre_configure
 {
   my $self = shift;
@@ -13,5 +14,10 @@ sub pre_configure
   $self->SUPER::pre_configure();
 }
 
+# Explicitly set servername, since we require .localdomain for our cookies
+sub new_test_config {
+      my $self = shift;
+      $self->{conf_opts}->{servername} = 'localhost.localdomain';
+      return $self->SUPER::new_test_config;
+}
 
-# arch-tag: 4f4eb9e2-10b7-4c44-8859-3c690c1bff66
