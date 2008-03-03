@@ -173,8 +173,8 @@ unless ($fatal || $redirected) {
   }
   elsif ($mode eq 'login') {
     if ($username && $AuthTktConfig::validate_sub->($username, $password)) {
-#     my $user_data = join(':', encrypt($password), time(), $ip_addr);
-      my $user_data = join(':', time(), $ip_addr);    # Optional
+#     my $user_data = join(':', encrypt($password), time(), ($ip_addr ? $ip_addr : ''));
+      my $user_data = join(':', time(), ($ip_addr ? $ip_addr : ''));    # Optional
       my $tkt = $at->ticket(uid => $username, data => $user_data, ip_addr => $ip_addr, debug => $AuthTktConfig::DEBUG);
       if (! @errors) {
         $redirected = $set_cookie_redirect->($tkt, $back);
