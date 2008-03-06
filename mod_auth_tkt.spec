@@ -9,18 +9,16 @@
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
-Version: 2.0.0
+Version: 2.0.0rc3
 Release: 1%{?dist}.of
 License: GPL
 Group: Applications/System
 Source: http://www.openfusion.com.au/labs/dist/mod_auth_tkt-%{version}.tar.gz
-URL: http://www.openfusion.com.au/labs/nagios-of-plugins/
-Packager: Gavin Carr <gavin@openfusion.com.au>
-Vendor: Open Fusion Pty. Ltd.
+URL: http://www.openfusion.com.au/labs/mod_auth_tkt/
 Buildroot: %_tmppath/%{name}-%{version}
 Requires: %{httpd}
 BuildRequires: %{httpd}-devel
-AutoReq: no
+#AutoReq: no
 
 %description
 mod_auth_tkt provides lightweight, repository-agnostic, ticket-based
@@ -97,10 +95,12 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 /var/www/pub/*.cgi
 
 %changelog
-* Mon Mar 05 2007 Gavin Carr <gavin@openfusion.com.au> 2.0.0-1.
+* Tue Mar 04 2008 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc3-1
+- Set explicit servername in t/TESTS to fix general test failures.
+- Add explicit Apache 2.2 support.
 - Add separate mod_auth_tkt-cgi package containing /var/www/pub CGI scripts.
 - Factor out cgi config settings into AuthTktConfig.pm.
-- Bump to version 2.0.0.
+- Bump to version 2.0.0rc3.
 
 * Wed Nov 28 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc2
 - Bump to version 2.0.0rc2.
@@ -147,4 +147,3 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 - Initial release.
 
 
-# arch-tag: 56c36703-99d8-409e-97dc-1b81e565b29a
