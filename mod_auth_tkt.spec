@@ -1,5 +1,5 @@
 
-# Use "--define='apache 1'" to build an 'mod_auth_tkt1' package for apache1
+# Use "--define='apache 1'" to build a 'mod_auth_tkt1' package for apache1
 %define httpd httpd
 %define name mod_auth_tkt
 %{?apache:%define httpd apache}
@@ -31,7 +31,6 @@ Release: 1%{?org_tag}
 Summary: CGI scripts for mod_auth_tkt apache authentication modules.
 Group: Applications/System
 Requires: %{name} = %{version}
-Prefix: /var/www/pub
 BuildArch: noarch
 
 %description cgi
@@ -58,22 +57,24 @@ fi
 test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d
-mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
+#mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
 mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
-mkdir -p $RPM_BUILD_ROOT/var/www/pub
-mkdir -p $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
+mkdir -p $RPM_BUILD_ROOT/var/www/auth
+#mkdir -p $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
 if [ %{httpd} == apache ]; then
   /usr/sbin/apxs1 -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
 else
   /usr/sbin/apxs -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
 fi
 install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
-cp cgi/Apache/* $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
-cp -pr cgi/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
-rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi/Apache
-cp -pr cgi/* $RPM_BUILD_ROOT/var/www/pub
-rm -rf $RPM_BUILD_ROOT/var/www/pub/Apache
+install -m 644 conf/auth_tkt_cgi.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
+#cp cgi/Apache/* $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
+#cp -pr cgi/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
+#rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi/Apache
+cp -pr cgi/* $RPM_BUILD_ROOT/var/www/auth
+rm -rf $RPM_BUILD_ROOT/var/www/auth/Apache
 cp -pr contrib/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
+rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib/t
 cp -pr README* INSTALL LICENSE ChangeLog CREDITS $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}
 cd doc
 make DESTDIR=$RPM_BUILD_ROOT install
@@ -84,22 +85,23 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_libdir}/%{httpd}
-%{perl_vendorlib}/Apache/AuthTkt.pm
+#%{perl_vendorlib}/Apache/AuthTkt.pm
 %doc /usr/share/doc/%{name}-%{version}
-%attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/*
-/usr/share/man/*
+%attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/02_auth_tkt.conf
+/usr/share/man/*/*
 
 %files cgi
 %defattr(-,root,root)
-%config(noreplace)/var/www/pub/AuthTktConfig.pm
-%config(noreplace)/var/www/pub/tkt.css
-/var/www/pub/*.cgi
+%attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/auth_tkt_cgi.conf
+%config(noreplace)/var/www/auth/AuthTktConfig.pm
+%config(noreplace)/var/www/auth/tkt.css
+/var/www/auth/*.cgi
 
 %changelog
 * Tue Mar 04 2008 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc3-1
 - Set explicit servername in t/TESTS to fix general test failures.
 - Add explicit Apache 2.2 support.
-- Add separate mod_auth_tkt-cgi package containing /var/www/pub CGI scripts.
+- Add separate mod_auth_tkt-cgi package containing /var/www/auth CGI scripts.
 - Factor out cgi config settings into AuthTktConfig.pm.
 - Bump to version 2.0.0rc3.
 

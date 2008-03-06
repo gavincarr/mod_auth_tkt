@@ -69,14 +69,14 @@ Standard URL to which unauthenticated users are redirected.
 This is a required directive unless you are using guest mode
 via 'TKTAuthGuestLogin on'. e.g.
 
-  TKTAuthLoginURL https://www.example.com/pub/login.cgi
+  TKTAuthLoginURL https://www.example.com/auth/login.cgi
 
 =item TKTAuthTimeoutURL <url>
 
 URL to which users are redirected in the event their ticket times
 out. Default: TKTAuthLoginURL. e.g.
 
-  TKTAuthTimeoutURL https://www.example.com/pub/login.cgi?timeout=1
+  TKTAuthTimeoutURL https://www.example.com/auth/login.cgi?timeout=1
 
 =item TKTAuthPostTimeoutURL <url>
 
@@ -86,14 +86,14 @@ you to handle such cases specially - you probably don't want to
 redirect back to the referrer after login, for instance.
 Default: TKTAuthTImeoutURL. e.g.
 
-  TKTAuthPostTimeoutURL https://www.example.com/pub/login.cgi?posttimeout=1
+  TKTAuthPostTimeoutURL https://www.example.com/auth/login.cgi?posttimeout=1
 
 =item TKTAuthUnauthURL <url>
 
 URL to which users are redirected in the event that they are not
 authorised for a particular area e.g. incorrect tokens. 
 
-  TKTAuthUnauthURL https://www.example.com/pub/login.cgi?unauth=1
+  TKTAuthUnauthURL https://www.example.com/auth/login.cgi?unauth=1
 
 =item TKTAuthGuestLogin <boolean>
 
@@ -304,7 +304,7 @@ Minimal config using logins:
   <Location /secret1>
     AuthType Basic
     require valid-user
-    TKTAuthLoginURL https://www.example.com/pub/login.cgi
+    TKTAuthLoginURL https://www.example.com/auth/login.cgi
   </Location>
 
 Minimal config using guest logins (users can still login explicitly, of 
@@ -321,9 +321,9 @@ Example internet configuration:
   <Location /secret3>
     AuthType Basic
     require valid-user
-    TKTAuthLoginURL https://www.example.com/pub/login.cgi
-    TKTAuthTimeoutURL https://www.example.com/pub/login.cgi?timeout=1
-    TKTAuthPostTimeoutURL https://www.example.com/pub/login.cgi?timeout=1&post=1
+    TKTAuthLoginURL https://www.example.com/auth/login.cgi
+    TKTAuthTimeoutURL https://www.example.com/auth/login.cgi?timeout=1
+    TKTAuthPostTimeoutURL https://www.example.com/auth/login.cgi?timeout=1&post=1
     TKTAuthIgnoreIP on
     TKTAuthTimeout 2h
     TKTAuthCookieExpires 2h
@@ -335,9 +335,9 @@ Example intranet configuration:
     AuthType Basic
     require valid-user
     TKTAuthGuestLogin on
-    TKTAuthLoginURL https://www.example.com/pub/login.cgi
-    TKTAuthTimeoutURL https://www.example.com/pub/login.cgi?timeout=1
-    TKTAuthPostTimeoutURL https://www.example.com/pub/login.cgi?timeout=1&post=1
+    TKTAuthLoginURL https://www.example.com/auth/login.cgi
+    TKTAuthTimeoutURL https://www.example.com/auth/login.cgi?timeout=1
+    TKTAuthPostTimeoutURL https://www.example.com/auth/login.cgi?timeout=1&post=1
     TKTAuthTimeout 4h
     TKTAuthCookieExpires 4h
   </Location>
