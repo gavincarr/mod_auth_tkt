@@ -1,0 +1,109 @@
+To generate auth_tkt cookies or just the ticket string you can use this
+auth_tkt rails library.
+  
+
+Configuration
+-------------
+
+Copy auth_tkt.rb to the lib directory of your rails application. Edit it
+and set the following values:
+1. Set the path to the secret key file (configuration file, usually 
+   02_auth_tkt.conf) for the constant SECRET_KEY_FILE.
+2. If you want to use the ticket across multiple subdomains you have to 
+   set a string for your top-level-domain for the constant DOMAIN (i.e. 
+   ".yourdomain.com").
+
+
+Usage
+-----
+
+To use the library, include it into your controller using "include AuthTkt".
+
+Creating the cookie string:
+
+User the 
+  function get_tkt_hash(user, token_list, user_data, base64) 
+to get a signed cookie string.
+
+Parameters:
+
+The user should be the username.
+The token_list may be a group name or any token you want to use, leave it
+blank or set it to nil, if you don't want to use any.
+The user_data may be a any data you want to use, leave it blank or set it
+to nil, if you don't want to use any.
+The base64 value is a boolean, that activates base64 encoding for the 
+ticket string, default is false. Keep in mind this is no encryption and 
+does not protect your data from being red.
+Data encryption to protect your data is not implemented for this library
+yet. You should use SSL to prevent anybody from reading your data.
+
+Setting a cookie:
+
+Use the function
+  set_auth_tkt_cookie(user, domain, token_list, user_data, base64)
+to set a cookie directly. Use the parameters as described in the section
+above.
+The parameter domain will be the value for the domain used in the cookie.
+It can be accessed from auth_tkt.rb via AuthTkt::DOMAIN or set to nil, if
+none should be use.
+
+
+Using acts_as_authenticated with auth_tkt
+-----------------------------------------
+
+The common plugin acts_as_authenticated adds an out of the box login 
+system to a rails application.
+The plugin acl_system2 adds role support to the acts_as_authenticated
+login system.
+
+To use the auth_tkt login with the rails plugins acts_as_authenticated
+and acl_system2 to get a auth_tkt ticket saved with each login you have
+to proceed the following steps:
+
+Install and setup the plugins acts_as_authenticated and acl_system2.
+
+Edit the file account_controller.rb:
+
+1. add the line
+
+   include AuthTkt
+   
+   at top of the class definition
+
+
+2. add the following two lines
+
+      role_titles = (self.current_user.roles.collect { |x| x.title }).join(',')
+      set_auth_tkt_cookie(self.current_user.login, AuthTkt::DOMAIN, role_titles, nil, true)
+
+   behind the row
+
+      if logged_in?
+
+   into the definition of the login function
+
+
+3. add the following block
+   
+      if params[:back] and not params[:back].empty?
+        redirect_to params[:back]
+        return
+      end
+
+   above the line
+
+      redirect_back_or_default(:controller => '/account', :action => 'index')
+   
+   into the definition of the login function
+
+
+4. add the line
+
+    destroy_auth_tkt_cookie
+   
+   after the line
+   
+    cookies.delete :auth_token
+   
+   into the definition of the logout function
