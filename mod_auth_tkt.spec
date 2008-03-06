@@ -10,7 +10,7 @@
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
 Version: 2.0.0rc3
-Release: 1%{?dist}.of
+Release: 1%{?org_tag}%{?dist}
 License: GPL
 Group: Applications/System
 Source: http://www.openfusion.com.au/labs/dist/mod_auth_tkt-%{version}.tar.gz
@@ -18,7 +18,6 @@ URL: http://www.openfusion.com.au/labs/mod_auth_tkt/
 Buildroot: %_tmppath/%{name}-%{version}
 Requires: %{httpd}
 BuildRequires: %{httpd}-devel
-#AutoReq: no
 
 %description
 mod_auth_tkt provides lightweight, repository-agnostic, ticket-based
@@ -28,10 +27,12 @@ authentication requires a user-supplied CGI or script of some kind - see
 the mod_auth_tkt-cgi package for perl cgi versions.
 
 %package cgi
+Release: 1%{?org_tag}
 Summary: CGI scripts for mod_auth_tkt apache authentication modules.
 Group: Applications/System
 Requires: %{name} = %{version}
 Prefix: /var/www/pub
+BuildArch: noarch
 
 %description cgi
 Perl CGI scripts for use with mod_auth_tkt.
