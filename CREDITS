@@ -1,6 +1,11 @@
 Sascha Hanssen <hanssen@meso.net> provided a ticket generator for
 Ruby on Rails, included in the contrib directory. Version 2.0.0rc3.
 
+Peter Karman <peter@peknet.com>, Jose Luis Martinez 
+<jlmartinez@capside.com>, and Ton Voon <ton.voon@altinity.com>
+provided patches to Apache::AuthTkt to allow it to parse and 
+validate existing tickets. Version 2.0.0rc3.
+
 Charlie Brady <charlie_brady@mitel.com> provided patches to honour
 the X-Forwarded-Host header in cookie domains and back references, 
 if set (for use behind a proxy). Version 2.0.0rc2.
