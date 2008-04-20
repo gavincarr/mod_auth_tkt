@@ -27,11 +27,10 @@ authentication requires a user-supplied CGI or script of some kind - see
 the mod_auth_tkt-cgi package for perl cgi versions.
 
 %package cgi
-Release: 1%{?org_tag}
+Release: 1%{?org_tag}%{?dist}
 Summary: CGI scripts for mod_auth_tkt apache authentication modules.
 Group: Applications/System
 Requires: %{name} = %{version}
-BuildArch: noarch
 
 %description cgi
 Perl CGI scripts for use with mod_auth_tkt.
