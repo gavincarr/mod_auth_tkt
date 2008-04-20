@@ -67,7 +67,11 @@ module AuthTkt
     digest = Digest::MD5.hexdigest(digest0 + get_secret_key)
     
     # concatenating signature, timestamp and payload
-    cookie = digest + timestamp.to_hex + user + '!' + token_list + '!' + user_data
+    cookie = digest + timestamp.to_hex + user 
+    if token_list
+      cookie += '!' + token_list 
+    end
+    cookie += '!' + user_data
     
     # base64 encode cookie, if needed
     if base64
