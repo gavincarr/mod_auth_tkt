@@ -1317,9 +1317,17 @@ auth_tkt_check(request_rec *r)
         guest = setup_guest(r, conf, parsed);
       }
       if (! guest) {
-        ap_log_rerror(APLOG_MARK, APLOG_INFO, APR_SUCCESS, r, 
-          "TKT: no valid ticket found - redirecting to login url");
-        return redirect(r, conf->login_url);
+        if (conf->login_url) {
+          ap_log_rerror(APLOG_MARK, APLOG_INFO, APR_SUCCESS, r, 
+            "TKT: no valid ticket found - redirecting to login url");
+          return redirect(r, conf->login_url);
+        }
+        else {
+          /* Fatal error: guest setup failed, but we have no login url defined */
+          ap_log_rerror(APLOG_MARK, APLOG_ERR, APR_SUCCESS, r, 
+            "TKT: guest login failed and no login url to fall back to - aborting");
+          return HTTP_INTERNAL_SERVER_ERROR;
+        }
       }
     }
   }
@@ -1338,7 +1346,15 @@ auth_tkt_check(request_rec *r)
       else {
         url = conf->timeout_url ? conf->timeout_url : conf->login_url;
       }
-      return redirect(r, url);
+      if (url) {
+        return redirect(r, url);
+      }
+      else {
+        /* Fatal error: guest setup failed, but we have no url to redirect to */
+        ap_log_rerror(APLOG_MARK, APLOG_ERR, APR_SUCCESS, r, 
+          "TKT: ticket timeout, guest login failed, and no url to fall back to - aborting");
+        return HTTP_INTERNAL_SERVER_ERROR;
+      }
     }
   }
 
