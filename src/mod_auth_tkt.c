@@ -1081,9 +1081,20 @@ redirect(request_rec *r, char *location)
       apr_psprintf(r->pool, "%s", r->hostname) :
       apr_psprintf(r->pool, "%s:%d", r->hostname, port);
   }
+
+  /* If no scheme, assume location is relative and expand using scheme and hostinfo */
+  if (strncasecmp(location, "http", 4) != 0) {
+    char *old_location = apr_pstrdup(r->pool, location); 
+    location = apr_psprintf(r->pool, "%s://%s/%s", scheme, hostinfo, location);
+    if (conf->debug >= 1) {
+      ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
+        "TKT relative URL '%s' expanded to '%s'", old_location, location);
+    }
+  }
+
+  /* Setup back URL */
   back = apr_psprintf(r->pool, "%s://%s%s%s", 
     scheme, hostinfo, r->uri, query);
-
   if (conf->debug >= 1) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
       "TKT: back url '%s'", back);

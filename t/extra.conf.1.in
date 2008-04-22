@@ -11,6 +11,14 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
   TKTAuthLoginURL http://localhost/pub/login.cgi
 </Location>
 
+# secret_relative_url - test relative URL expansion
+<Location /secret_relative_url>
+  AuthType Basic
+  require valid-user
+  TKTAuthLoginURL /pub/login.cgi
+  TKTAuthDebug 1
+</Location>
+
 # secret_ignore_ip - ignore ip testing
 <Location /secret_ignore_ip>
   AuthType Basic
