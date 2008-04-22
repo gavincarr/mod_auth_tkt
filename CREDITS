@@ -1,3 +1,7 @@
+Brian Kuschak <bkuschak@yahoo.com> provided patches to convert
+relative redirect URLs to absolute ones using current schema/hostinfo
+settings.
+
 Sascha Hanssen <hanssen@meso.net> provided a ticket generator for
 Ruby on Rails, included in the contrib directory. Version 2.0.0rc3.
 
