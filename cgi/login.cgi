@@ -75,7 +75,7 @@ my $username = lc($q->param('username'));
 my $password = $q->param('password');
 my $timeout = $q->param('timeout');
 my $unauth = $q->param('unauth');
-my $ip_addr = $at->ignore_ip ? undef : $ENV{REMOTE_ADDR};
+my $ip_addr = $at->ignore_ip ? '' : $ENV{REMOTE_ADDR};
 my $redirected = 0;
 
 # ------------------------------------------------------------------------
