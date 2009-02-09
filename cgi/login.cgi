@@ -172,17 +172,21 @@ unless ($fatal || $redirected) {
     $fatal = "AuthTkt error: " . $at->errstr;
   }
   elsif ($mode eq 'login') {
-    if ($username && $AuthTktConfig::validate_sub->($username, $password)) {
-#     my $user_data = join(':', encrypt($password), time(), ($ip_addr ? $ip_addr : ''));
-      my $user_data = join(':', time(), ($ip_addr ? $ip_addr : ''));    # Optional
-      my $tkt = $at->ticket(uid => $username, data => $user_data, ip_addr => $ip_addr, debug => $AuthTktConfig::DEBUG);
-      if (! @errors) {
-        $redirected = $set_cookie_redirect->($tkt, $back);
-        $fatal = "Login successful.";
+    if ($username) {
+      my ($valid, $tokens) = $AuthTktConfig::validate_sub->($username, $password);
+      if ($valid) {
+#       my $user_data = join(':', encrypt($password), time(), ($ip_addr ? $ip_addr : ''));
+        my $user_data = join(':', time(), ($ip_addr ? $ip_addr : ''));    # Optional
+        my $tkt = $at->ticket(uid => $username, data => $user_data, 
+          ip_addr => $ip_addr, tokens => $tokens, debug => $AuthTktConfig::DEBUG);
+        if (! @errors) {
+          $redirected = $set_cookie_redirect->($tkt, $back);
+          $fatal = "Login successful.";
+        }
       }
-    }
-    elsif ($username) {
-      push @errors, "Invalid username or password.";
+      else {
+        push @errors, "Invalid username or password.";
+      }
     }
   }
 
