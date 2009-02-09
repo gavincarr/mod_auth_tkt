@@ -9,7 +9,7 @@
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
-Version: 2.0.0rc3
+Version: 2.0.0rc4
 Release: 1%{?org_tag}%{?dist}
 License: GPL
 Group: Applications/System
@@ -97,6 +97,9 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 /var/www/auth/*.cgi
 
 %changelog
+* Tue Mar 04 2008 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc4-1
+- Bump to version 2.0.0rc4.
+
 * Tue Mar 04 2008 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc3-1
 - Set explicit servername in t/TESTS to fix general test failures.
 - Add explicit Apache 2.2 support.

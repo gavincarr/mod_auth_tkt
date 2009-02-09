@@ -1,4 +1,109 @@
 ------------------------------------------------------------
+revno: 51
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2009-02-10 07:56:36 +1100
+message:
+  Tweak login.cgi to allow validate_sub to pass back tokens (from dev).
+------------------------------------------------------------
+revno: 50
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2009-02-10 07:54:57 +1100
+message:
+  Add additional debug output in check_tokens (from dev).
+------------------------------------------------------------
+revno: 49
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2009-02-10 07:53:44 +1100
+message:
+  Tiny tweak to login.cgi (from dev).
+------------------------------------------------------------
+revno: 48
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2009-02-10 07:52:30 +1100
+message:
+  Add a placeholder contrib README file.
+------------------------------------------------------------
+revno: 47
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2008-04-22 20:08:38 +1000
+message:
+  Add Brian Kuschak to CREDITS.
+------------------------------------------------------------
+revno: 46
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2008-04-22 20:06:03 +1000
+message:
+  Add code to convert relative redirect URLs (patch from Brian Kuschak <bkuschak@yahoo.com>).
+------------------------------------------------------------
+revno: 45
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Mon 2008-04-21 18:02:50 +1000
+message:
+  Add code to protect redirect() from a null url after setup_guest failures.
+------------------------------------------------------------
+revno: 44
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Mon 2008-04-21 08:34:50 +1000
+message:
+  Fix buglet in contributed auth_tkt.rb, reported by Sam Gentle <sgentle@gmail.com>.
+------------------------------------------------------------
+revno: 43
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Mon 2008-04-21 07:25:40 +1000
+message:
+  Add %dist tag back to cgi package in spec file - noarch doesn't work.
+------------------------------------------------------------
+revno: 42
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Fri 2008-03-07 07:47:58 +1100
+message:
+  Updates to README and INSTALL.
+------------------------------------------------------------
+revno: 41
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Fri 2008-03-07 07:38:39 +1100
+message:
+  Spec file updates around splitting out cgi stuff; split conf/*.conf samples.
+------------------------------------------------------------
+revno: 40
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Thu 2008-03-06 20:22:55 +1100
+message:
+  Spec file tweaks.
+------------------------------------------------------------
+revno: 39
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Thu 2008-03-06 20:04:59 +1100
+message:
+  Add Peter Karman, Ton Voon, and Jose Luis Martinez to CREDITS.
+------------------------------------------------------------
+revno: 38
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Thu 2008-03-06 20:01:59 +1100
+message:
+  Add ruby ticket generator from Sascha Hanssen to contrib.
+------------------------------------------------------------
+revno: 37
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Thu 2008-03-06 17:58:43 +1100
+message:
+  ChangeLog updates.
+------------------------------------------------------------
 revno: 36
 committer: Gavin Carr <gavin@openfusion.com.au>
 branch nick: trunk
