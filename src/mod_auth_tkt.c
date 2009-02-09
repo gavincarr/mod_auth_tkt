@@ -842,6 +842,8 @@ check_tokens(request_rec *r, char *tokens)
   }
   /* Failure if required and no user tokens found */
   if (tokens == NULL || strlen(tokens) == 0) {
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
+      "TKT: no matching tokens! (no user tokens found)");
     return 0;
   }
 
