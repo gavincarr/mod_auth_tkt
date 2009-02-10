@@ -79,7 +79,7 @@ Advanced Configuration Options
    autologin.cgi version in your TKTAuthLoginURL. Something like the
    following should then work for all your domains:
 
-      AuthType Basic
+      AuthType None
       require valid-user
       TKTAuthCookieName auth_tkt
       TKTAuthLoginURL https://www.mydomain.com/auth/autologin.cgi

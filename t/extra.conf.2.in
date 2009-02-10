@@ -6,14 +6,14 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 
 # secret_basic - minimal config
 <Location /secret_basic>
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
 </Location>
 
 # secret_relative_url - test relative URL expansion
 <Location /secret_relative_url>
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL /pub/login.cgi
   TKTAuthDebug 1
@@ -21,7 +21,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 
 # secret_ignore_ip - ignore ip testing
 <Location /secret_ignore_ip>
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
   TKTAuthIgnoreIP on
@@ -29,7 +29,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 
 # secret_tokens - token testing
 <Location /secret_tokens>
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
   TKTAuthToken finance
@@ -40,7 +40,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -50,7 +50,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_nocookie>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie off
@@ -60,7 +60,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_nocookie2>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
 </Location>
@@ -69,7 +69,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -81,7 +81,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid1>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -92,7 +92,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid2>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -104,7 +104,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid3>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -116,7 +116,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid4>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -128,7 +128,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid5>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -140,7 +140,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid6>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -152,7 +152,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid7>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -164,7 +164,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_guest_user_uuid8>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -176,7 +176,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry1>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -187,7 +187,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry2>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -198,7 +198,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry3>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -209,7 +209,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry4>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -220,7 +220,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry5>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -231,7 +231,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry6>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -242,7 +242,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry7>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -253,7 +253,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry8>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -264,7 +264,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_expiry9>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -275,7 +275,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_secure1>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -286,7 +286,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_cookie_secure2>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthGuestLogin on
   TKTAuthGuestCookie on
@@ -297,7 +297,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_noguest>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
   TKTAuthGuestLogin on
@@ -308,7 +308,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 
 # secret_timeout - timeout testing
 <Location /secret_timeout>
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
   TKTAuthTimeoutURL http://localhost/pub/timeout.cgi
@@ -319,7 +319,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 
 # secret_timeout_refresh - timeout refresh testing
 <Location /secret_timeout_refresh>
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
   TKTAuthTimeoutURL http://localhost/pub/timeout.cgi
@@ -332,7 +332,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <Location /secret_timeout_guest_fallback>
   AddHandler cgi-script .cgi
   Options +ExecCGI
-  AuthType Basic
+  AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
   TKTAuthTimeoutURL http://localhost/pub/timeout.cgi
@@ -349,7 +349,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
   TKTAuthSecret "vhostlocalsecret"
   DocumentRoot @documentroot@/vhost_local_secret
   <Location />
-    AuthType Basic
+    AuthType None
     require valid-user
     TKTAuthLoginURL http://localhost/pub/login.cgi
   </Location>
@@ -359,7 +359,7 @@ TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
 <VirtualHost VHostGlobalSecret>
   DocumentRoot @documentroot@/vhost_global_secret
   <Location />
-    AuthType Basic
+    AuthType None
     require valid-user
     TKTAuthLoginURL http://localhost/pub/login.cgi
     TKTAuthDebug 3

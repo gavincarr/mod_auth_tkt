@@ -55,12 +55,12 @@ sections, or in .htaccess files.
 
 =over 4
 
-=item AuthType Basic / require <users>
+=item AuthType None / require <users>
 
 mod_auth_tkt requires the following standard apache authentication 
 directives to trigger authentication:
 
-  AuthType Basic
+  AuthType None
   require valid-user      # or require user1, user2, etc.
 
 =item TKTAuthLoginURL <url>
@@ -302,7 +302,7 @@ proxy, where you would want to use TKTAuthCookieSecure by itself
 Minimal config using logins:
 
   <Location /secret1>
-    AuthType Basic
+    AuthType None
     require valid-user
     TKTAuthLoginURL https://www.example.com/auth/login.cgi
   </Location>
@@ -311,7 +311,7 @@ Minimal config using guest logins (users can still login explicitly, of
 course):
 
   <Location /secret2>
-    AuthType Basic
+    AuthType None
     require valid-user
     TKTAuthGuestLogin on
   </Location>
@@ -319,7 +319,7 @@ course):
 Example internet configuration:
 
   <Location /secret3>
-    AuthType Basic
+    AuthType None
     require valid-user
     TKTAuthLoginURL https://www.example.com/auth/login.cgi
     TKTAuthTimeoutURL https://www.example.com/auth/login.cgi?timeout=1
@@ -332,7 +332,7 @@ Example internet configuration:
 Example intranet configuration:
 
   <Location /secret4>
-    AuthType Basic
+    AuthType None
     require valid-user
     TKTAuthGuestLogin on
     TKTAuthLoginURL https://www.example.com/auth/login.cgi
