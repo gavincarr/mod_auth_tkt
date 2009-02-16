@@ -71,6 +71,7 @@ typedef struct  {
 /* Per-server configuration */
 typedef struct {
   const char *secret;
+  const char *digest_type;
   char *docroot;
 } auth_tkt_serv_conf;
 
@@ -319,6 +320,21 @@ setup_secret (cmd_parms *cmd, void *cfg, const char *param)
 }
 
 static const char *
+setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
+{
+  auth_tkt_serv_conf *sconf = ap_get_module_config(cmd->server->module_config, 
+    &auth_tkt_module);
+  sconf->digest_type = param;
+
+  if (strcmp(sconf->digest_type, "MD5") != 0 &&
+      strcmp(sconf->digest_type, "SHA1") != 0) {
+    return "Digest type must be one of: MD5 | SHA1.";
+  }
+
+  return NULL;
+}
+
+static const char *
 set_cookie_expires (cmd_parms *cmd, void *cfg, const char *param)
 {
   auth_tkt_dir_conf *conf = (auth_tkt_dir_conf *)cfg;
@@ -381,7 +397,7 @@ static const command_rec auth_tkt_cmds[] =
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, auth_domain),
     OR_AUTHCFG, "domain to use in cookies"),
 #ifndef APACHE13
-  /* TKTAuthCookieExpires not supported under Apache 1.3 yet */
+  /* TKTAuthCookieExpires is not supported under Apache 1.3 */
   AP_INIT_ITERATE("TKTAuthCookieExpires", set_cookie_expires, 
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, cookie_expires),
     OR_AUTHCFG, "cookie expiry period, in seconds or units [smhdwMy]"),
@@ -412,7 +428,9 @@ static const command_rec auth_tkt_cmds[] =
   AP_INIT_TAKE1("TKTAuthTimeoutRefresh", set_auth_tkt_timeout_refresh, 
     NULL, OR_AUTHCFG, "ticket timeout refresh flag (0-1)"),
   AP_INIT_TAKE1("TKTAuthSecret", setup_secret, 
-    NULL, RSRC_CONF, "secret key to use in MD5 digest"),
+    NULL, RSRC_CONF, "secret key to use in digest"),
+  AP_INIT_TAKE1("TKTAuthDigestType", setup_digest_type, 
+    NULL, RSRC_CONF, "digest type to use [MD5|SHA1], default MD5"),
   AP_INIT_FLAG("TKTAuthGuestLogin", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_login),
     OR_AUTHCFG, "whether to log people in as guest if no other auth available"),

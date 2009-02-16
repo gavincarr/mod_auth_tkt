@@ -3,6 +3,7 @@ LoadModule auth_tkt_module modules/mod_auth_tkt.so
 
 # Test secret
 TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
+TKTAuthDigestType "MD5"
 
 # secret_basic - minimal config
 <Location /secret_basic>
