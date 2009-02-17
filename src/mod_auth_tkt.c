@@ -330,8 +330,8 @@ set_auth_tkt_timeout_refresh (cmd_parms *cmd, void *cfg, const char *param)
 static const char *
 setup_secret (cmd_parms *cmd, void *cfg, const char *param)
 {
-  auth_tkt_serv_conf *sconf = ap_get_module_config(cmd->server->module_config, 
-    &auth_tkt_module);
+  auth_tkt_serv_conf *sconf = 
+    ap_get_module_config(cmd->server->module_config, &auth_tkt_module);
   sconf->secret = param;
   return NULL;
 }
@@ -339,8 +339,8 @@ setup_secret (cmd_parms *cmd, void *cfg, const char *param)
 static const char *
 setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
 {
-  auth_tkt_serv_conf *sconf = ap_get_module_config(cmd->server->module_config, 
-    &auth_tkt_module);
+  auth_tkt_serv_conf *sconf = 
+    ap_get_module_config(cmd->server->module_config, &auth_tkt_module);
 
   if (strcmp(param, "MD5") != 0 && strcmp(param, "SHA1") != 0)
     return "Digest type must be one of: MD5 | SHA1.";
@@ -481,6 +481,8 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   int sepidx, sep2idx;
   char *ticket = *magic;
   int len = strlen(ticket);
+  auth_tkt_serv_conf *sconf = 
+    ap_get_module_config(r->server->module_config, &auth_tkt_module);
   auth_tkt_dir_conf *conf = 
     ap_get_module_config(r->per_dir_config, &auth_tkt_module);
   
@@ -489,7 +491,7 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   if (ticket[0] == '"') *magic = ++ticket;
 
   /* Basic length check for min size */
-  if (len <= (MD5_DIGEST_SZ + TSTAMP_SZ))
+  if (len <= (sconf->digest_sz + TSTAMP_SZ))
     return 0; 
   
   /* See if there is a uid/data separator */
@@ -515,8 +517,8 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   }
 
   /* Recheck length */
-  if (len <= (MD5_DIGEST_SZ + TSTAMP_SZ) || 
-      sepidx < (MD5_DIGEST_SZ + TSTAMP_SZ)) 
+  if (len <= (sconf->digest_sz + TSTAMP_SZ) || 
+      sepidx < (sconf->digest_sz + TSTAMP_SZ)) 
     return 0; 
 
   if (conf->debug >= 1) {
@@ -525,10 +527,10 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   }
   
   /* Get the user id */
-  parsed->uid = apr_palloc(r->pool, sepidx - (MD5_DIGEST_SZ + TSTAMP_SZ) + 1);
-  memcpy(parsed->uid, &ticket[(MD5_DIGEST_SZ + TSTAMP_SZ)], 
-    sepidx - (MD5_DIGEST_SZ + TSTAMP_SZ));
-  parsed->uid[sepidx - (MD5_DIGEST_SZ + TSTAMP_SZ)] = '\0';
+  parsed->uid = apr_palloc(r->pool, sepidx - (sconf->digest_sz + TSTAMP_SZ) + 1);
+  memcpy(parsed->uid, &ticket[(sconf->digest_sz + TSTAMP_SZ)], 
+    sepidx - (sconf->digest_sz + TSTAMP_SZ));
+  parsed->uid[sepidx - (sconf->digest_sz + TSTAMP_SZ)] = '\0';
   
   /* Check for tokens */
   sep2idx = ap_ind(&ticket[sepidx+1], SEPARATOR);
@@ -564,7 +566,7 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   apr_snprintf(parsed->user_data, len-sepidx+1, "%s", &ticket[sepidx+1]);
   
   /* Copy timestamp to parsed->timestamp */
-  sscanf(&ticket[MD5_DIGEST_SZ], "%8x", &(parsed->timestamp));
+  sscanf(&ticket[sconf->digest_sz], "%8x", &(parsed->timestamp));
   
   return 1;
 }
@@ -730,6 +732,8 @@ get_url_ticket(request_rec *r)
 static char * 
 get_cookie_ticket(request_rec *r)
 {
+  auth_tkt_serv_conf *sconf = 
+    ap_get_module_config(r->server->module_config, &auth_tkt_module);
   auth_tkt_dir_conf *conf = 
     ap_get_module_config(r->per_dir_config, &auth_tkt_module);
 
@@ -741,7 +745,7 @@ get_cookie_ticket(request_rec *r)
   apr_table_do(cookie_match, (void *) cr, r->headers_in, "Cookie", NULL);
 
   /* Give up if cookie not found or too short */
-  if (! cr->cookie || strlen(cr->cookie) < (MD5_DIGEST_SZ + TSTAMP_SZ)) 
+  if (! cr->cookie || strlen(cr->cookie) < (sconf->digest_sz + TSTAMP_SZ)) 
     return NULL;
 
   return cr->cookie;
@@ -761,7 +765,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   char *user_data = parsed->user_data;
 
   unsigned char *buf = apr_palloc(r->pool, 8 + strlen(secret) + strlen(uid) + 1 + strlen(tokens) + 1 + strlen(user_data) + 1);
-  unsigned char *buf2 = apr_palloc(r->pool, MD5_DIGEST_SZ + strlen(secret));
+  unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
   char *digest;
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
@@ -817,9 +821,9 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   }
 
   /* Copy digest + secret into buf2 */
-  len = MD5_DIGEST_SZ + strlen(secret);
-  memcpy(buf2, digest, MD5_DIGEST_SZ);
-  memcpy(&buf2[MD5_DIGEST_SZ], secret, len - MD5_DIGEST_SZ);
+  len = sconf->digest_sz + strlen(secret);
+  memcpy(buf2, digest, sconf->digest_sz);
+  memcpy(&buf2[sconf->digest_sz], secret, len - sconf->digest_sz);
 
   /* Generate the second digest */
   digest = ap_md5_binary(r->pool, buf2, len);
@@ -829,7 +833,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   }
 
   /* Should be noop, but just in case ... */
-  if (strlen(digest) > MD5_DIGEST_SZ) digest[MD5_DIGEST_SZ] = 0;
+  if (strlen(digest) > sconf->digest_sz) digest[sconf->digest_sz] = 0;
 
   return (digest);
 }
@@ -840,6 +844,8 @@ static int
 valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
 {
   char *digest;
+  auth_tkt_serv_conf *sconf =
+    ap_get_module_config(r->server->module_config, &auth_tkt_module);
   auth_tkt_dir_conf *conf = 
     ap_get_module_config(r->per_dir_config, &auth_tkt_module);
 
@@ -860,7 +866,7 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
 
   /* Check MD5 hash */
   digest = ticket_digest(r, parsed, 0);
-  if (memcmp(ticket, digest, MD5_DIGEST_SZ) != 0) {
+  if (memcmp(ticket, digest, sconf->digest_sz) != 0) {
     ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, r, 
       "TKT valid_ticket: ticket found, but hash is invalid - digest '%s', ticket '%32.32s'", digest, ticket);
     return 0;
