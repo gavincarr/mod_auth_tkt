@@ -29,6 +29,7 @@
 #define BACK_ARG_NAME "back"
 #define DEFAULT_DIGEST_TYPE "MD5"
 #define MD5_DIGEST_SZ 32
+#define SHA1_DIGEST_SZ 40
 #define TSTAMP_SZ 8
 #define SEPARATOR '!'
 #define SEPARATOR_HEX "%21"
@@ -73,6 +74,7 @@ typedef struct  {
 typedef struct {
   const char *secret;
   const char *digest_type;
+  int digest_sz;
   char *docroot;
 } auth_tkt_serv_conf;
 
@@ -179,9 +181,16 @@ merge_auth_tkt_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
 static void *
 create_auth_tkt_serv_config(apr_pool_t *p, server_rec* s)
 {
-  auth_tkt_serv_conf *conf = apr_palloc(p, sizeof(*conf));
-  conf->secret = NULL;
-  return conf;
+  auth_tkt_serv_conf *sconf = apr_palloc(p, sizeof(*sconf));
+  sconf->secret = NULL;
+  sconf->digest_type = DEFAULT_DIGEST_TYPE;
+  if (strcmp(sconf->digest_type, "MD5") == 0) {
+    sconf->digest_sz = MD5_DIGEST_SZ;
+  }
+  else if (strcmp(sconf->digest_type, "SHA1") == 0) {
+    sconf->digest_sz = SHA1_DIGEST_SZ;
+  }
+  return sconf;
 } 
 
 /* Merge per-server config structures */
@@ -190,10 +199,17 @@ merge_auth_tkt_serv_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
 {
   auth_tkt_serv_conf *parent = (auth_tkt_serv_conf *) parent_dirv;
   auth_tkt_serv_conf *subdir = (auth_tkt_serv_conf *) subdirv;
-  auth_tkt_serv_conf *conf = apr_palloc(p, sizeof(*conf));
+  auth_tkt_serv_conf *sconf = apr_palloc(p, sizeof(*sconf));
 
-  conf->secret = (subdir->secret) ? subdir->secret : parent->secret;
-  return conf;
+  sconf->secret = (subdir->secret) ? subdir->secret : parent->secret;
+  sconf->digest_type = (subdir->digest_type) ? subdir->digest_type : parent->digest_type;
+  if (strcmp(sconf->digest_type, "MD5") == 0) {
+    sconf->digest_sz = MD5_DIGEST_SZ;
+  }
+  else if (strcmp(sconf->digest_type, "SHA1") == 0) {
+    sconf->digest_sz = SHA1_DIGEST_SZ;
+  }
+  return sconf;
 } 
 
 /* ----------------------------------------------------------------------- */
@@ -330,6 +346,12 @@ setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
     return "Digest type must be one of: MD5 | SHA1.";
 
   sconf->digest_type = param;
+  if (strcmp(sconf->digest_type, "MD5") == 0) {
+    sconf->digest_sz = MD5_DIGEST_SZ;
+  }
+  else if (strcmp(sconf->digest_type, "SHA1") == 0) {
+    sconf->digest_sz = SHA1_DIGEST_SZ;
+  }
 
   return NULL;
 }
@@ -1256,48 +1278,43 @@ setup_guest(request_rec *r, auth_tkt_dir_conf *conf, auth_tkt *tkt)
 /* ----------------------------------------------------------------------- */
 /* Debug routines */
 void 
-dump_config(request_rec *r) 
+dump_config(request_rec *r, auth_tkt_serv_conf *sconf, auth_tkt_dir_conf *conf) 
 {
-  auth_tkt_dir_conf *conf = 
-    ap_get_module_config(r->per_dir_config, &auth_tkt_module);
-  if (conf->debug >= 3) {
-    auth_tkt_serv_conf *sconf =
-      ap_get_module_config(r->server->module_config, &auth_tkt_module);
-
-    /* Dump config settings */
-    fprintf(stderr,"[ mod_auth_tkt config ]\n");
-    fprintf(stderr,"URI: %s\n", r->uri);
-    fprintf(stderr,"Filename: %s\n",                    r->filename);
-    fprintf(stderr,"TKTAuthSecret: %s\n", 	        sconf->secret);
-    fprintf(stderr,"directory: %s\n", 		        conf->directory);
-    fprintf(stderr,"TKTAuthLoginURL: %s\n", 	        conf->login_url);
-    fprintf(stderr,"TKTAuthTimeoutURL: %s\n", 	        conf->timeout_url);
-    fprintf(stderr,"TKTAuthPostTimeoutURL: %s\n",	conf->post_timeout_url);
-    fprintf(stderr,"TKTAuthUnauthURL: %s\n", 	        conf->unauth_url);
-    fprintf(stderr,"TKTAuthCookieName: %s\n", 	        conf->auth_cookie_name);
-    fprintf(stderr,"TKTAuthDomain: %s\n", 	        conf->auth_domain);
-    fprintf(stderr,"TKTAuthCookieExpires: %d\n", 	conf->cookie_expires);
-    fprintf(stderr,"TKTAuthBackCookieName: %s\n",	conf->back_cookie_name);
-    fprintf(stderr,"TKTAuthBackArgName: %s\n",	        conf->back_arg_name);
-    fprintf(stderr,"TKTAuthIgnoreIP: %d\n",	        conf->ignore_ip);
-    fprintf(stderr,"TKTAuthRequireSSL: %d\n", 	        conf->require_ssl);
-    fprintf(stderr,"TKTAuthCookieSecure: %d\n", 	conf->secure_cookie);
-    fprintf(stderr,"TKTAuthTimeoutMin: %d\n", 	        conf->timeout_sec);
-    fprintf(stderr,"TKTAuthTimeoutRefresh: %f\n",	conf->timeout_refresh);
-    fprintf(stderr,"TKTAuthGuestLogin: %d\n",           conf->guest_login);
-    fprintf(stderr,"TKTAuthGuestCookie: %d\n",          conf->guest_cookie);
-    fprintf(stderr,"TKTAuthGuestUser: %s\n",            conf->guest_user);
-    fprintf(stderr,"TKTAuthGuestFallback %d\n",         conf->guest_fallback);
-    if (conf->auth_token->nelts > 0) {
-      char ** auth_token = (char **) conf->auth_token->elts;
-      int i;
-      for (i = 0; i < conf->auth_token->nelts; i++) {
-        fprintf(stderr, "TKTAuthToken: %s\n", auth_token[i]);
-      }
+  /* Dump config settings */
+  fprintf(stderr,"[ mod_auth_tkt config ]\n");
+  fprintf(stderr,"URI: %s\n", r->uri);
+  fprintf(stderr,"Filename: %s\n",                    r->filename);
+  fprintf(stderr,"TKTAuthSecret: %s\n", 	            sconf->secret);
+  fprintf(stderr,"TKTAuthDigestType: %s\n", 	        sconf->digest_type);
+  fprintf(stderr,"digest_sz: %d\n", 	                sconf->digest_sz);
+  fprintf(stderr,"directory: %s\n", 		            conf->directory);
+  fprintf(stderr,"TKTAuthLoginURL: %s\n", 	        conf->login_url);
+  fprintf(stderr,"TKTAuthTimeoutURL: %s\n", 	        conf->timeout_url);
+  fprintf(stderr,"TKTAuthPostTimeoutURL: %s\n",	    conf->post_timeout_url);
+  fprintf(stderr,"TKTAuthUnauthURL: %s\n", 	        conf->unauth_url);
+  fprintf(stderr,"TKTAuthCookieName: %s\n", 	        conf->auth_cookie_name);
+  fprintf(stderr,"TKTAuthDomain: %s\n", 	            conf->auth_domain);
+  fprintf(stderr,"TKTAuthCookieExpires: %d\n", 	    conf->cookie_expires);
+  fprintf(stderr,"TKTAuthBackCookieName: %s\n",	    conf->back_cookie_name);
+  fprintf(stderr,"TKTAuthBackArgName: %s\n",	        conf->back_arg_name);
+  fprintf(stderr,"TKTAuthIgnoreIP: %d\n",	            conf->ignore_ip);
+  fprintf(stderr,"TKTAuthRequireSSL: %d\n", 	        conf->require_ssl);
+  fprintf(stderr,"TKTAuthCookieSecure: %d\n", 	    conf->secure_cookie);
+  fprintf(stderr,"TKTAuthTimeoutMin: %d\n", 	        conf->timeout_sec);
+  fprintf(stderr,"TKTAuthTimeoutRefresh: %f\n",	    conf->timeout_refresh);
+  fprintf(stderr,"TKTAuthGuestLogin: %d\n",           conf->guest_login);
+  fprintf(stderr,"TKTAuthGuestCookie: %d\n",          conf->guest_cookie);
+  fprintf(stderr,"TKTAuthGuestUser: %s\n",            conf->guest_user);
+  fprintf(stderr,"TKTAuthGuestFallback %d\n",         conf->guest_fallback);
+  if (conf->auth_token->nelts > 0) {
+    char ** auth_token = (char **) conf->auth_token->elts;
+    int i;
+    for (i = 0; i < conf->auth_token->nelts; i++) {
+      fprintf(stderr, "TKTAuthToken: %s\n", auth_token[i]);
     }
-    fprintf(stderr,"TKTAuthDebug: %d\n",                conf->debug);
-    fflush(stderr);
   }
+  fprintf(stderr,"TKTAuthDebug: %d\n",                conf->debug);
+  fflush(stderr);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -1316,7 +1333,9 @@ auth_tkt_check(request_rec *r)
   int timeout;
   char *url = NULL;
 
-  dump_config(r);
+  /* Dump config if debugging */
+  if (conf->debug >= 3)
+    dump_config(r, sconf, conf);
 
   /* Module not configured unless login_url or guest_login is set */
   if (! conf->login_url && conf->guest_login <= 0) {
