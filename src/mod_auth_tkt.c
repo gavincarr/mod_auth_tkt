@@ -27,8 +27,9 @@
 
 #define AUTH_COOKIE_NAME "auth_tkt"
 #define BACK_ARG_NAME "back"
+#define DEFAULT_DIGEST_TYPE "MD5"
 #define MD5_DIGEST_SZ 32
-#define MD5andTSTAMP (MD5_DIGEST_SZ + 8)
+#define TSTAMP_SZ 8
 #define SEPARATOR '!'
 #define SEPARATOR_HEX "%21"
 #define REMOTE_USER_ENV "REMOTE_USER"
@@ -324,12 +325,11 @@ setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
 {
   auth_tkt_serv_conf *sconf = ap_get_module_config(cmd->server->module_config, 
     &auth_tkt_module);
-  sconf->digest_type = param;
 
-  if (strcmp(sconf->digest_type, "MD5") != 0 &&
-      strcmp(sconf->digest_type, "SHA1") != 0) {
+  if (strcmp(param, "MD5") != 0 && strcmp(param, "SHA1") != 0)
     return "Digest type must be one of: MD5 | SHA1.";
-  }
+
+  sconf->digest_type = param;
 
   return NULL;
 }
@@ -467,7 +467,8 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   if (ticket[0] == '"') *magic = ++ticket;
 
   /* Basic length check for min size */
-  if (len <= MD5andTSTAMP) return 0; 
+  if (len <= (MD5_DIGEST_SZ + TSTAMP_SZ))
+    return 0; 
   
   /* See if there is a uid/data separator */
   sepidx = ap_ind(ticket, SEPARATOR);
@@ -492,7 +493,9 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   }
 
   /* Recheck length */
-  if (len <= MD5andTSTAMP || sepidx < MD5andTSTAMP) return 0; 
+  if (len <= (MD5_DIGEST_SZ + TSTAMP_SZ) || 
+      sepidx < (MD5_DIGEST_SZ + TSTAMP_SZ)) 
+    return 0; 
 
   if (conf->debug >= 1) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
@@ -500,9 +503,10 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
   }
   
   /* Get the user id */
-  parsed->uid = apr_palloc(r->pool, sepidx - MD5andTSTAMP + 1);
-  memcpy(parsed->uid, &ticket[MD5andTSTAMP], sepidx - MD5andTSTAMP);
-  parsed->uid[sepidx - MD5andTSTAMP] = '\0';
+  parsed->uid = apr_palloc(r->pool, sepidx - (MD5_DIGEST_SZ + TSTAMP_SZ) + 1);
+  memcpy(parsed->uid, &ticket[(MD5_DIGEST_SZ + TSTAMP_SZ)], 
+    sepidx - (MD5_DIGEST_SZ + TSTAMP_SZ));
+  parsed->uid[sepidx - (MD5_DIGEST_SZ + TSTAMP_SZ)] = '\0';
   
   /* Check for tokens */
   sep2idx = ap_ind(&ticket[sepidx+1], SEPARATOR);
@@ -715,7 +719,8 @@ get_cookie_ticket(request_rec *r)
   apr_table_do(cookie_match, (void *) cr, r->headers_in, "Cookie", NULL);
 
   /* Give up if cookie not found or too short */
-  if (! cr->cookie || strlen(cr->cookie) < MD5andTSTAMP) return NULL;
+  if (! cr->cookie || strlen(cr->cookie) < (MD5_DIGEST_SZ + TSTAMP_SZ)) 
+    return NULL;
 
   return cr->cookie;
 }
@@ -751,7 +756,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
 
   if (conf->debug >= 2) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
-      "TKT ticket_digest: using md5 key '%s', ip '%s', ts '%d'", secret, remote_ip, timestamp);
+      "TKT ticket_digest: using secret '%s', ip '%s', ts '%d'", secret, remote_ip, timestamp);
   }
 
   /* Fatals */
@@ -807,7 +812,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   return (digest);
 }
 
-/* Check if this is a parseable and valid (MD5) ticket
+/* Check if this is a parseable and valid ticket
  * Returns 1 if valid, and the parsed ticket in parsed, 0 if not */
 static int
 valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
