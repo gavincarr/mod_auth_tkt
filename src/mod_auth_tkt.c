@@ -30,7 +30,6 @@
 #define BACK_ARG_NAME "back"
 #define DEFAULT_DIGEST_TYPE "MD5"
 #define MD5_DIGEST_SZ 32
-#define SHA256_DIGEST_SZ 64
 #define TSTAMP_SZ 8
 #define SEPARATOR '!'
 #define SEPARATOR_HEX "%21"
@@ -189,7 +188,7 @@ create_auth_tkt_serv_config(apr_pool_t *p, server_rec* s)
     sconf->digest_sz = MD5_DIGEST_SZ;
   }
   else if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    sconf->digest_sz = SHA256_DIGEST_SZ;
+    sconf->digest_sz = SHA256_BLOCK_LENGTH;
   }
   return sconf;
 } 
@@ -208,7 +207,7 @@ merge_auth_tkt_serv_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
     sconf->digest_sz = MD5_DIGEST_SZ;
   }
   else if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    sconf->digest_sz = SHA256_DIGEST_SZ;
+    sconf->digest_sz = SHA256_BLOCK_LENGTH;
   }
   return sconf;
 } 
@@ -351,7 +350,7 @@ setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
     sconf->digest_sz = MD5_DIGEST_SZ;
   }
   else if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    sconf->digest_sz = SHA256_DIGEST_SZ;
+    sconf->digest_sz = SHA256_BLOCK_LENGTH;
   }
 
   return NULL;
@@ -768,7 +767,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   unsigned char *buf = apr_palloc(r->pool, 8 + strlen(secret) + strlen(uid) + 1 + strlen(tokens) + 1 + strlen(user_data) + 1);
   unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
-  char *digest;
+  char *digest = NULL;
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
   unsigned long ip;
   struct in_addr ia;
@@ -815,11 +814,13 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   buf[len] = 0;
 
   /* Generate the initial digest */
-  if (strcmp(sconf->digest_type, "SHA256") == 0)
-    char digest = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
-    digest = apr__SHA256_Data(buf, len, digest);
-  else 
+  if (strcmp(sconf->digest_type, "SHA256") == 0) {
+    char* digest = apr_palloc(r->pool, SHA256_BLOCK_LENGTH);
+    digest = mat_SHA256_Data(buf, len, digest);
+  }
+  else {
     digest = ap_md5_binary(r->pool, buf, len);
+  }
   if (conf->debug >= 2) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
       "TKT ticket_digest: digest0: '%s' (input length %d)", digest, len);
@@ -831,11 +832,13 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   memcpy(&buf2[sconf->digest_sz], secret, len - sconf->digest_sz);
 
   /* Generate the second digest */
-  if (strcmp(sconf->digest_type, "SHA256") == 0)
-    char digest = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
-    digest = apr__SHA256_Data(buf2, len, digest);
-  else
+  if (strcmp(sconf->digest_type, "SHA256") == 0) {
+    char* digest = apr_palloc(r->pool, SHA256_BLOCK_LENGTH);
+    digest = mat_SHA256_Data(buf2, len, digest);
+  }
+  else {
     digest = ap_md5_binary(r->pool, buf2, len);
+  }
   if (conf->debug >= 2) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
       "TKT ticket_digest: digest: '%s'", digest);
