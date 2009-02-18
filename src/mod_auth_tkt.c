@@ -8,6 +8,7 @@
 #include "http_core.h"
 #include "http_protocol.h"
 #include "util_md5.h"
+#include "sha2.h"
 
 #ifdef APACHE13
 #include "ap_compat.h"
@@ -29,7 +30,7 @@
 #define BACK_ARG_NAME "back"
 #define DEFAULT_DIGEST_TYPE "MD5"
 #define MD5_DIGEST_SZ 32
-#define SHA1_DIGEST_SZ 40
+#define SHA256_DIGEST_SZ 64
 #define TSTAMP_SZ 8
 #define SEPARATOR '!'
 #define SEPARATOR_HEX "%21"
@@ -187,8 +188,8 @@ create_auth_tkt_serv_config(apr_pool_t *p, server_rec* s)
   if (strcmp(sconf->digest_type, "MD5") == 0) {
     sconf->digest_sz = MD5_DIGEST_SZ;
   }
-  else if (strcmp(sconf->digest_type, "SHA1") == 0) {
-    sconf->digest_sz = SHA1_DIGEST_SZ;
+  else if (strcmp(sconf->digest_type, "SHA256") == 0) {
+    sconf->digest_sz = SHA256_DIGEST_SZ;
   }
   return sconf;
 } 
@@ -206,8 +207,8 @@ merge_auth_tkt_serv_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
   if (strcmp(sconf->digest_type, "MD5") == 0) {
     sconf->digest_sz = MD5_DIGEST_SZ;
   }
-  else if (strcmp(sconf->digest_type, "SHA1") == 0) {
-    sconf->digest_sz = SHA1_DIGEST_SZ;
+  else if (strcmp(sconf->digest_type, "SHA256") == 0) {
+    sconf->digest_sz = SHA256_DIGEST_SZ;
   }
   return sconf;
 } 
@@ -342,15 +343,15 @@ setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
   auth_tkt_serv_conf *sconf = 
     ap_get_module_config(cmd->server->module_config, &auth_tkt_module);
 
-  if (strcmp(param, "MD5") != 0 && strcmp(param, "SHA1") != 0)
-    return "Digest type must be one of: MD5 | SHA1.";
+  if (strcmp(param, "MD5") != 0 && strcmp(param, "SHA256") != 0)
+    return "Digest type must be one of: MD5 | SHA256.";
 
   sconf->digest_type = param;
   if (strcmp(sconf->digest_type, "MD5") == 0) {
     sconf->digest_sz = MD5_DIGEST_SZ;
   }
-  else if (strcmp(sconf->digest_type, "SHA1") == 0) {
-    sconf->digest_sz = SHA1_DIGEST_SZ;
+  else if (strcmp(sconf->digest_type, "SHA256") == 0) {
+    sconf->digest_sz = SHA256_DIGEST_SZ;
   }
 
   return NULL;
@@ -452,7 +453,7 @@ static const command_rec auth_tkt_cmds[] =
   AP_INIT_TAKE1("TKTAuthSecret", setup_secret, 
     NULL, RSRC_CONF, "secret key to use in digest"),
   AP_INIT_TAKE1("TKTAuthDigestType", setup_digest_type, 
-    NULL, RSRC_CONF, "digest type to use [MD5|SHA1], default MD5"),
+    NULL, RSRC_CONF, "digest type to use [MD5|SHA256], default MD5"),
   AP_INIT_FLAG("TKTAuthGuestLogin", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_login),
     OR_AUTHCFG, "whether to log people in as guest if no other auth available"),
@@ -814,7 +815,11 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   buf[len] = 0;
 
   /* Generate the initial digest */
-  digest = ap_md5_binary(r->pool, buf, len);
+  if (strcmp(sconf->digest_type, "SHA256") == 0)
+    char digest = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
+    digest = apr__SHA256_Data(buf, len, digest);
+  else 
+    digest = ap_md5_binary(r->pool, buf, len);
   if (conf->debug >= 2) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
       "TKT ticket_digest: digest0: '%s' (input length %d)", digest, len);
@@ -826,7 +831,11 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   memcpy(&buf2[sconf->digest_sz], secret, len - sconf->digest_sz);
 
   /* Generate the second digest */
-  digest = ap_md5_binary(r->pool, buf2, len);
+  if (strcmp(sconf->digest_type, "SHA256") == 0)
+    char digest = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
+    digest = apr__SHA256_Data(buf2, len, digest);
+  else
+    digest = ap_md5_binary(r->pool, buf2, len);
   if (conf->debug >= 2) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
       "TKT ticket_digest: digest: '%s'", digest);
@@ -864,7 +873,7 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
       parsed->uid, parsed->tokens, parsed->user_data, parsed->timestamp);
   }
 
-  /* Check MD5 hash */
+  /* Check hash */
   digest = ticket_digest(r, parsed, 0);
   if (memcmp(ticket, digest, sconf->digest_sz) != 0) {
     ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, r, 
