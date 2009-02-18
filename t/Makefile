@@ -23,5 +23,4 @@ realclean:
 	./TEST -clean
 	rm -f $(MODULE)
 
-# arch-tag: 5cd4db63-b47e-4ca1-88b3-1e78ce10dc41
 # vim:noet

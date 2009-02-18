@@ -89,6 +89,5 @@ ok t_cmp($res->code, 307, 'redirected with long token');
 ok t_cmp($res->content, qr/redirect.*login/is, 'long token: redirect to login');
 
 
-# arch-tag: 3cfa3e3f-d724-41ed-b0bc-b6fcde2aad3b
 # vim:sw=2:et:sm:smartindent:ft=perl
 

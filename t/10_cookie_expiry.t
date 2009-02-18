@@ -163,6 +163,5 @@ ok t_cmp(abs $diff->delta_days, qr/^[012]$/, 'cookie expires field years ok (' .
 #ok t_cmp($expires, qr/^$calc/, 'cookie expires field years ok');
 
 
-# arch-tag: 0b1853de-769d-428e-90e1-3da5129b47b7
 # vim:sw=2:et:sm:smartindent:ft=perl
 

@@ -64,6 +64,5 @@ $jar->set_cookie(1, 'auth_tkt', $ticket, '/', '.localdomain');
 $res = GET $url;
 ok t_cmp($res->code, 307, 'redirect with incorrect IP address');
 
-# arch-tag: 6cc41750-db6b-4802-bc07-4bcbf5eac391
 # vim:sw=2:et:sm:smartindent:ft=perl
 

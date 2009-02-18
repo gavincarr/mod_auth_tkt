@@ -71,6 +71,5 @@ ok t_cmp($res->content, qr/^This is secret_guest_nocookie2, you are guest/i, 'ac
 ok t_cmp($jar->as_string, '', 'NO auth_tkt cookie set');
 
 
-# arch-tag: 6b729c38-7424-44c6-b509-3f7fcc5203fb
 # vim:sw=2:et:sm:smartindent:ft=perl
 

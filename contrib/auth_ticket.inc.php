@@ -203,7 +203,6 @@ if( !function_exists( 'file_get_contents' ) ) {
 }
 
 
-// arch-tag: 229278fe-278c-449a-a5c2-5f6867109dbe
 
 ?>
 

@@ -147,6 +147,5 @@ if (have_apache 2) {
 }
 
 
-# arch-tag: d7047fea-899f-4565-b9ae-a39923378963
 # vim:sw=2:et:sm:smartindent:ft=perl
 

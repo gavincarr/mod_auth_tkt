@@ -116,6 +116,5 @@ EOD
 EOD
 }
 
-# arch-tag: 09c96fc6-5119-4c79-8086-6c6b24951f96
 # vim:sw=2:sm:cin
 

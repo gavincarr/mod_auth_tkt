@@ -50,6 +50,5 @@ ok t_cmp($res->code, 200, 'accepted with valid ticket');
 ok t_cmp($res->content, qr/^This is secret_guest, you are testuser/i, 'accepted testuser');
 
 
-# arch-tag: 453e1bac-7554-472c-ae1f-212088fe6ede
 # vim:sw=2:et:sm:smartindent:ft=perl
 

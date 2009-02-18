@@ -68,6 +68,5 @@ $jar->set_cookie(1, 'auth_tkt', 'X' x 1025, '/', '.localdomain');
 $res = GET $url;
 ok t_cmp($res->code, 307, 'redirect with very large ticket');
 
-# arch-tag: 88737fe0-a46a-4007-9d7a-74ed38c7e475
 # vim:sw=2:et:sm:smartindent:ft=perl
 

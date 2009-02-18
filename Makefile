@@ -16,5 +16,4 @@ realclean:
 $(TESTS):
 	cd t && $(MAKE) $@
 
-# arch-tag: b72771f5-7db6-407d-b4c2-2cd0a48eb1e1
 # vim:noet

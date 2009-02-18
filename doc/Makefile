@@ -18,6 +18,5 @@ clean:
 	-rm -f $(MANPAGE)
 
 
-# arch-tag: 394fedf6-070d-4904-b9d6-31b37eb3f698
 # vim:noet
 

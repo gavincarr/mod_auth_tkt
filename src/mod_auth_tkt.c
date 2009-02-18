@@ -1450,6 +1450,5 @@ module AP_MODULE_DECLARE_DATA auth_tkt_module = {
 #endif
 
 /* 
- * arch-tag: 70090400-e89e-46e1-9c78-1a9ad0cd47eb
  * vim:sw=2:sm
  */

@@ -54,6 +54,5 @@ ok t_cmp($jar->as_string, qr/^Set-Cookie3:\s*auth_tkt=/, 'auth_tkt cookie set');
 
 
 
-# arch-tag: e019222f-6dab-40b0-916f-995646b2f5cc
 # vim:sw=2:et:sm:smartindent:ft=perl
 

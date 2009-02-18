@@ -16,6 +16,5 @@ my $data = GET_BODY $url;
 
 ok t_cmp($data, qr/^This is public/, 'GET on public file');
 
-# arch-tag: dea04ba8-c819-4fd5-aaf2-0a51f960707c
 # vim:sw=2:et:sm:smartindent:ft=perl
 
