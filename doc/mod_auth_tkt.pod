@@ -5,9 +5,9 @@ mod_auth_tkt - apache ticket authentication module
 =head1 DESCRIPTION
 
 mod_auth_tkt is a lightweight cookie-based authentication module,
-written in C, for apache versions 1.3.x and 2.0.x. It implements a
-single-signon framework that works across multiple apache instances
-and multiple machines.
+written in C, for apache versions 1.3.x, 2.0.x, and 2.2.x It 
+implements a single-signon framework that works across multiple 
+apache instances, different apache versions, and multiple machines.
 
 mod_auth_tkt itself is completely repository-agnostic, as the actual
 authentication is done by a user-supplied CGI or script in your
@@ -31,14 +31,14 @@ begin with 'TKTAuth'):
 =head2 Server Directives
 
 mod_auth_tkt requires one apache server-level directive - the shared 
-secret used for MD5 hashing. May be global or specific to a virtual 
+secret used for digest hashing. May be global or specific to a virtual 
 host.
 
 =over 4
 
 =item TKTAuthSecret <secret>
 
-String - the secret used for MD5 hashing. This should be kept secret 
+String - the secret used for digest hashing. This should be kept secret 
 and changed periodically. e.g.
 
   TKTAuthSecret "w b@5b15#664038f.f9d8U19b7e25 664eY9ad2%4393e,a2ef"
@@ -123,7 +123,7 @@ recommended, however.
 Username to be used for the guest user (in the ticket uid, 
 REMOTE_USER environment variable, etc). 
 
-On apache 2.0.x (but not on apache 1.3.x, as yet), the
+On apache 2.0.x and 2.2.x (but not on apache 1.3.x), the
 TKTAuthGuestUser may also contain a special sprintf-like
 pattern '%U', which is expanded to 36-character UUID, allowing
 individualised guest usernames. The %U may also include an
