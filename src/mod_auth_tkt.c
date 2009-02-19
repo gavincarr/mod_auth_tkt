@@ -815,7 +815,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
 
   /* Generate the initial digest */
   if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    char* digest = apr_palloc(r->pool, SHA256_BLOCK_LENGTH);
+    char* digest = apr_palloc(r->pool, sconf->digest_sz);
     digest = mat_SHA256_Data(buf, len, digest);
   }
   else {
@@ -833,7 +833,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
 
   /* Generate the second digest */
   if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    char* digest = apr_palloc(r->pool, SHA256_BLOCK_LENGTH);
+    char* digest = apr_palloc(r->pool, sconf->digest_sz);
     digest = mat_SHA256_Data(buf2, len, digest);
   }
   else {
