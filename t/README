@@ -1,0 +1,23 @@
+Test Instructions
+=================
+
+1. To run the test suite against the currently configured apache version:
+
+   make test
+   # (see the Makefile for details, but it's basically just running ./TEST)
+
+
+
+2. To run a single unit test e.g. 01_basic.t:
+
+   ./TEST 01_basic.t
+
+
+3. To run a single unit test through gdb (seems to have to be done from
+   the top-level directory):
+
+   # (make sure you've run with './configure --debug' for debug symbols)
+   t/TEST -one-process -debug=gdb -breakpoint=tkt_digest t/01_basic.t
+
+
+

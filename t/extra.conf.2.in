@@ -3,13 +3,14 @@ LoadModule auth_tkt_module modules/mod_auth_tkt.so
 
 # Test secret
 TKTAuthSecret "10530349-a324-450f-8299-5218a6fa0843"
-TKTAuthDigestType "MD5"
+TKTAuthDigestType "SHA256"
 
 # secret_basic - minimal config
 <Location /secret_basic>
   AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
+  TKTAuthDebug 3
 </Location>
 
 # secret_relative_url - test relative URL expansion
@@ -17,7 +18,6 @@ TKTAuthDigestType "MD5"
   AuthType None
   require valid-user
   TKTAuthLoginURL /pub/login.cgi
-  TKTAuthDebug 1
 </Location>
 
 # secret_ignore_ip - ignore ip testing
@@ -363,7 +363,6 @@ TKTAuthDigestType "MD5"
     AuthType None
     require valid-user
     TKTAuthLoginURL http://localhost/pub/login.cgi
-    TKTAuthDebug 3
   </Location>
 </VirtualHost>
 

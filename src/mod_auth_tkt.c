@@ -745,8 +745,18 @@ get_cookie_ticket(request_rec *r)
   apr_table_do(cookie_match, (void *) cr, r->headers_in, "Cookie", NULL);
 
   /* Give up if cookie not found or too short */
-  if (! cr->cookie || strlen(cr->cookie) < (sconf->digest_sz + TSTAMP_SZ)) 
+  if (! cr->cookie) {
     return NULL;
+  }
+  if (strlen(cr->cookie) < sconf->digest_sz + TSTAMP_SZ) {
+    if (conf->debug >= 1) {
+      ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
+        "TKT get_cookie_tkt: found cookie ticket, "
+        "but it's too short for a %s digest (%d < %d)",
+        sconf->digest_type, strlen(cr->cookie), sconf->digest_sz + TSTAMP_SZ);
+    }
+    return NULL;
+  }
 
   return cr->cookie;
 }
