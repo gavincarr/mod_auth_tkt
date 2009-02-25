@@ -183,13 +183,8 @@ create_auth_tkt_serv_config(apr_pool_t *p, server_rec* s)
 {
   auth_tkt_serv_conf *sconf = apr_palloc(p, sizeof(*sconf));
   sconf->secret = NULL;
-  sconf->digest_type = DEFAULT_DIGEST_TYPE;
-  if (strcmp(sconf->digest_type, "MD5") == 0) {
-    sconf->digest_sz = MD5_DIGEST_SZ;
-  }
-  else if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    sconf->digest_sz = SHA256_BLOCK_LENGTH;
-  }
+  sconf->digest_type = NULL;
+  sconf->digest_sz = 0;
   return sconf;
 } 
 
@@ -199,16 +194,11 @@ merge_auth_tkt_serv_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
 {
   auth_tkt_serv_conf *parent = (auth_tkt_serv_conf *) parent_dirv;
   auth_tkt_serv_conf *subdir = (auth_tkt_serv_conf *) subdirv;
-  auth_tkt_serv_conf *sconf = apr_palloc(p, sizeof(*sconf));
+  auth_tkt_serv_conf *sconf  = apr_palloc(p, sizeof(*sconf));
 
-  sconf->secret = (subdir->secret) ? subdir->secret : parent->secret;
+  sconf->secret      = (subdir->secret) ? subdir->secret : parent->secret;
   sconf->digest_type = (subdir->digest_type) ? subdir->digest_type : parent->digest_type;
-  if (strcmp(sconf->digest_type, "MD5") == 0) {
-    sconf->digest_sz = MD5_DIGEST_SZ;
-  }
-  else if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    sconf->digest_sz = SHA256_BLOCK_LENGTH;
-  }
+  sconf->digest_sz   = (subdir->digest_sz) ? subdir->digest_sz : parent->digest_sz;
   return sconf;
 } 
 
@@ -336,6 +326,17 @@ setup_secret (cmd_parms *cmd, void *cfg, const char *param)
   return NULL;
 }
 
+void
+setup_digest_sz (auth_tkt_serv_conf *sconf)
+{
+  if (strcmp(sconf->digest_type, "MD5") == 0) {
+    sconf->digest_sz = MD5_DIGEST_SZ;
+  }
+  else if (strcmp(sconf->digest_type, "SHA256") == 0) {
+    sconf->digest_sz = SHA256_BLOCK_LENGTH;
+  }
+}
+
 static const char *
 setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
 {
@@ -346,12 +347,7 @@ setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
     return "Digest type must be one of: MD5 | SHA256.";
 
   sconf->digest_type = param;
-  if (strcmp(sconf->digest_type, "MD5") == 0) {
-    sconf->digest_sz = MD5_DIGEST_SZ;
-  }
-  else if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    sconf->digest_sz = SHA256_BLOCK_LENGTH;
-  }
+  setup_digest_sz(sconf);
 
   return NULL;
 }
@@ -1362,6 +1358,12 @@ auth_tkt_check(request_rec *r)
   int guest = 0;
   int timeout;
   char *url = NULL;
+
+  /* Default digest_type if not set */
+  if (! sconf->digest_type) {
+    sconf->digest_type = DEFAULT_DIGEST_TYPE;
+    setup_digest_sz(sconf);
+  }
 
   /* Dump config if debugging */
   if (conf->debug >= 3)
