@@ -774,13 +774,15 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   char *tokens = parsed->tokens;
   char *user_data = parsed->user_data;
 
-  unsigned char *buf = apr_palloc(r->pool, 8 + strlen(secret) + strlen(uid) + 1 + strlen(tokens) + 1 + strlen(user_data) + 1);
+  unsigned char *buf = apr_palloc(r->pool, 
+    TSTAMP_SZ + strlen(secret) + strlen(uid) + 1 + strlen(tokens) + 1 + strlen(user_data) + 1);
   unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
   char *digest = NULL;
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
   unsigned long ip;
   struct in_addr ia;
+  char *d;
 
   /* Convert remote_ip to unsigned long */
   if (inet_aton(remote_ip, &ia) == 0) {
@@ -825,8 +827,8 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
 
   /* Generate the initial digest */
   if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    char* digest = apr_palloc(r->pool, sconf->digest_sz);
-    digest = mat_SHA256_Data(buf, len, digest);
+    d = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
+    digest = mat_SHA256_Data(buf, len, d);
   }
   else {
     digest = ap_md5_binary(r->pool, buf, len);
@@ -843,8 +845,8 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
 
   /* Generate the second digest */
   if (strcmp(sconf->digest_type, "SHA256") == 0) {
-    char* digest = apr_palloc(r->pool, sconf->digest_sz);
-    digest = mat_SHA256_Data(buf2, len, digest);
+    d = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
+    digest = mat_SHA256_Data(buf2, len, d);
   }
   else {
     digest = ap_md5_binary(r->pool, buf2, len);
@@ -890,7 +892,7 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
   digest = ticket_digest(r, parsed, 0);
   if (memcmp(ticket, digest, sconf->digest_sz) != 0) {
     ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, r, 
-      "TKT valid_ticket: ticket found, but hash is invalid - digest '%s', ticket '%32.32s'", digest, ticket);
+      "TKT valid_ticket: ticket found, but hash is invalid - digest '%s', ticket '%s'", digest, ticket);
     return 0;
   }
 
