@@ -11,7 +11,7 @@ use Apache::TestUtil;
 use Apache::TestRequest qw(GET);
 use HTTP::Cookies;
 use lib "cgi";
-use Apache::AuthTkt;
+use Apache::AuthTkt 2.0.9;
 
 plan tests => 7, need_lwp;
 
@@ -27,10 +27,11 @@ ok 1;   # simple load test
 
 my $at = Apache::AuthTkt->new(conf => 't/conf/extra.conf');
 my $url = '/secret_basic/index.html';
-my $res = GET $url;
+my $res;
 my $ticket;
 
 # No cookie - should be redirected
+$res = GET $url;
 ok t_cmp($res->code, 307, 'redirected');
 ok t_cmp($res->content, qr/redirect.*login/is, 'no ticket: redirect to login');
 

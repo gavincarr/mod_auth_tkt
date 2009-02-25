@@ -13,11 +13,13 @@ Test Instructions
    ./TEST 01_basic.t
 
 
-3. To run a single unit test through gdb (seems to have to be done from
-   the top-level directory):
+3. To run a single unit test through gdb:
 
    # (make sure you've run with './configure --debug' for debug symbols)
-   t/TEST -one-process -debug=gdb -breakpoint=tkt_digest t/01_basic.t
-
+   ./TEST -start-httpd -one-process 
+   # in another window
+   gdb /usr/sbin/httpd PID
+   # in test window
+   ./TEST 01_basic.t
 
 
