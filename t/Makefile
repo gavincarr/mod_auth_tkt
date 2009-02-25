@@ -9,12 +9,35 @@ $(TARGET):
 $(MODULE): $(TARGET)
 	$(APXS) -S LIBEXECDIR=$(BASEDIR)/t/modules -i ../src/$(TARGET)
 
-test: $(MODULE)
+test_md5: $(MODULE)
 	./TEST -clean
+	@echo '***********************'
+	@echo
+	@echo Testing digest_type MD5
+	@echo
+	@echo '***********************'
 	cp extra.conf.$(VERSION).in conf/extra.conf.in
 	./TEST -apxs $(APXS) -conf
 	./TEST
+#	./TEST 01_basic.t
+#	./TEST 01_basic.t
+#	./TEST 30_vhost_local_secret.t
+#	./TEST 31_vhost_global_secret.t
 
+test_sha256: $(MODULE)
+	./TEST -clean
+	@echo '**************************'
+	@echo
+	@echo Testing digest_type SHA256
+	@echo
+	@echo '**************************'
+	cp extra.conf.$(VERSION).in conf/extra.conf.in
+	perl -i -pe 's/MD5/SHA256/' conf/extra.conf.in
+	./TEST -apxs $(APXS) -conf
+	./TEST
+
+test: $(MODULE) test_md5 test_sha256
+	
 clean:
 	./TEST -clean
 	rm -f conf/extra.conf.in
