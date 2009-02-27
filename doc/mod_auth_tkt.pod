@@ -295,6 +295,14 @@ is where you are proxying through a separate SSL-equipped reverse
 proxy, where you would want to use TKTAuthCookieSecure by itself
 (since the proxied request will never be via SSL).
 
+=item TKTAuthDebug <integer>
+
+Turn on mod_auth_tkt debug output messages in your error log, with 
+verbosity increasing with higher integer values. Current range: 1-3. 
+
+Note that you will also require apache 'LogLevel debug' set to
+see these messages.
+
 =back
 
 =head1 EXAMPLES
