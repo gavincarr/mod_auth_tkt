@@ -31,17 +31,29 @@ begin with 'TKTAuth'):
 =head2 Server Directives
 
 mod_auth_tkt requires one apache server-level directive - the shared 
-secret used for MD5 hashing. May be global or specific to a virtual 
-host.
+secret used for hashing. May be global or specific to a virtual host.
 
 =over 4
 
 =item TKTAuthSecret <secret>
 
-String - the secret used for MD5 hashing. This should be kept secret 
-and changed periodically. e.g.
+String - the secret used for hashing. This should be kept secret and 
+changed periodically. e.g.
 
   TKTAuthSecret "w b@5b15#664038f.f9d8U19b7e25 664eY9ad2%4393e,a2ef"
+
+=item TKTAuthDigestType [ MD5 | SHA256 | SHA512 ]
+
+String, one of MD5 | SHA256 | SHA512. The digest/hash type to use in
+tickets. The default is MD5, which is faster, but has now been shown
+to be vulnerable to collision attacks. Such attacks are not directly
+applicable to mod_auth_tkt, which primarily relies on the security of
+the shared secret rather than the strength of the hashing scheme. More 
+paranoid users will probably prefer to use one of the SHA digest types, 
+however.
+
+The default is likely to change in a future version, so setting the 
+digest type explicitly is encouraged.
 
 =back
 
