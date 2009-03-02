@@ -55,6 +55,9 @@ however.
 The default is likely to change in a future version, so setting the 
 digest type explicitly is encouraged.
 
+Note that using one of the SHA digest types with the perl CGI scripts
+requires a version of Apache::AuthTkt >= 2.0.90.
+
 =back
 
 =head2 Directory Directives
