@@ -36,7 +36,19 @@ test_sha256: $(MODULE)
 	./TEST -apxs $(APXS) -conf
 	./TEST
 
-test: $(MODULE) test_md5 test_sha256
+test_sha512: $(MODULE)
+	./TEST -clean
+	@echo '**************************'
+	@echo
+	@echo Testing digest_type SHA512
+	@echo
+	@echo '**************************'
+	cp extra.conf.$(VERSION).in conf/extra.conf.in
+	perl -i -pe 's/MD5/SHA512/' conf/extra.conf.in
+	./TEST -apxs $(APXS) -conf
+	./TEST
+
+test: $(MODULE) test_md5 test_sha256 test_sha512
 	
 clean:
 	./TEST -clean

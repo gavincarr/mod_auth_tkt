@@ -335,6 +335,9 @@ setup_digest_sz (auth_tkt_serv_conf *sconf)
   else if (strcmp(sconf->digest_type, "SHA256") == 0) {
     sconf->digest_sz = SHA256_BLOCK_LENGTH;
   }
+  else if (strcmp(sconf->digest_type, "SHA512") == 0) {
+    sconf->digest_sz = SHA512_BLOCK_LENGTH;
+  }
 }
 
 static const char *
@@ -343,8 +346,10 @@ setup_digest_type (cmd_parms *cmd, void *cfg, const char *param)
   auth_tkt_serv_conf *sconf = 
     ap_get_module_config(cmd->server->module_config, &auth_tkt_module);
 
-  if (strcmp(param, "MD5") != 0 && strcmp(param, "SHA256") != 0)
-    return "Digest type must be one of: MD5 | SHA256.";
+  if (strcmp(param, "MD5") != 0 && 
+      strcmp(param, "SHA256") != 0 &&
+      strcmp(param, "SHA512") != 0)
+    return "Digest type must be one of: MD5 | SHA256 | SHA512.";
 
   sconf->digest_type = param;
   setup_digest_sz(sconf);
@@ -448,7 +453,7 @@ static const command_rec auth_tkt_cmds[] =
   AP_INIT_TAKE1("TKTAuthSecret", setup_secret, 
     NULL, RSRC_CONF, "secret key to use in digest"),
   AP_INIT_TAKE1("TKTAuthDigestType", setup_digest_type, 
-    NULL, RSRC_CONF, "digest type to use [MD5|SHA256], default MD5"),
+    NULL, RSRC_CONF, "digest type to use [MD5|SHA256|SHA512], default MD5"),
   AP_INIT_FLAG("TKTAuthGuestLogin", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_login),
     OR_AUTHCFG, "whether to log people in as guest if no other auth available"),
@@ -826,6 +831,10 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
     d = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
     digest = mat_SHA256_Data(buf, len, d);
   }
+  else if (strcmp(sconf->digest_type, "SHA512") == 0) {
+    d = apr_palloc(r->pool, SHA512_DIGEST_STRING_LENGTH);
+    digest = mat_SHA512_Data(buf, len, d);
+  }
   else {
     digest = ap_md5_binary(r->pool, buf, len);
   }
@@ -843,6 +852,10 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
   if (strcmp(sconf->digest_type, "SHA256") == 0) {
     d = apr_palloc(r->pool, SHA256_DIGEST_STRING_LENGTH);
     digest = mat_SHA256_Data(buf2, len, d);
+  }
+  else if (strcmp(sconf->digest_type, "SHA512") == 0) {
+    d = apr_palloc(r->pool, SHA512_DIGEST_STRING_LENGTH);
+    digest = mat_SHA512_Data(buf2, len, d);
   }
   else {
     digest = ap_md5_binary(r->pool, buf2, len);
