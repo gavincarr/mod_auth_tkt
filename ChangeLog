@@ -1,4 +1,67 @@
 ------------------------------------------------------------
+revno: 60
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Sat 2009-02-28 20:01:17 +1100
+message:
+  Bump version to 2.0.1 to pickup cgi fixes, for re-release.
+------------------------------------------------------------
+revno: 59
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Fri 2009-02-27 21:39:24 +1100
+message:
+  Add TKTAuthSecret to conf/auth_tkt_cgi.conf file as well; comment both out initially.
+------------------------------------------------------------
+revno: 58
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Fri 2009-02-27 21:24:41 +1100
+message:
+  Fix typo in login.cgi.
+------------------------------------------------------------
+revno: 57
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Fri 2009-02-27 17:41:46 +1100
+message:
+  Bump version to 2.0.0, for release.
+------------------------------------------------------------
+revno: 56
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Fri 2009-02-27 17:39:03 +1100
+message:
+  Add TKTAuthDebug to doc/mod_auth_tkt.pod.
+------------------------------------------------------------
+revno: 55
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Thu 2009-02-19 07:53:53 +1100
+message:
+  Remove old arch-tags from all files.
+------------------------------------------------------------
+revno: 54
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Thu 2009-02-19 07:51:36 +1100
+message:
+  Minor tweaks to doc/mod_auth_tkt.pod.
+------------------------------------------------------------
+revno: 53
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2009-02-10 18:05:22 +1100
+message:
+  Adjust all AuthType Basic instances to AuthType None.
+------------------------------------------------------------
+revno: 52
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: trunk
+timestamp: Tue 2009-02-10 08:02:08 +1100
+message:
+  Bump version to 2.0.0rc4; update ChangeLog.
+------------------------------------------------------------
 revno: 51
 committer: Gavin Carr <gavin@openfusion.com.au>
 branch nick: trunk

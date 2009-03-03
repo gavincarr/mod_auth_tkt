@@ -38,6 +38,5 @@ $cookie2 =~ s/"?;.*//;           # Normalise       "
 is($ticket1, $ticket2, 'ticket test 1');
 is($cookie1, $cookie2, 'cookie test 1');
 
-# arch-tag: f32271e6-6fac-4496-bcbd-96f1dea98f34
 # vim:sw=2:et:sm:smartindent
 

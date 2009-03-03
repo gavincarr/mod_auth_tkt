@@ -53,7 +53,7 @@ my $back = '';
 $back = $AuthTktConfig::FIXED_BACK_LOCATION if $AuthTktConfig::FIXED_BACK_LOCATION;
 $back ||= $back_cookie;
 $back ||= $q->param($at->back_arg_name) if $at->back_arg_name;
-$back = $AuthTktConfig::DEFAULT_BACK_LOCATION if $AuthTktConfig::DEFAULT_BACK_LOCATION;
+$back ||= $AuthTktConfig::DEFAULT_BACK_LOCATION if $AuthTktConfig::DEFAULT_BACK_LOCATION;
 $back ||= $ENV{HTTP_REFERER} if $ENV{HTTP_REFERER} && $AuthTktConfig::BACK_REFERER;
 if ($back && $back =~ m!^/!) {
   my $hostname = $server_name;
@@ -287,6 +287,5 @@ EOD
 EOD
 }
 
-# arch-tag: 1cac856d-534c-4c81-9e9a-34e39d26f4f2
 # vim:sw=2:sm:cin
 

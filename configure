@@ -112,4 +112,3 @@ echo $DIV >> Makedefs
 make -s clean
 
 
-# arch-tag: 3d0a3832-1e48-44d9-85e4-453896152def

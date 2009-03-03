@@ -55,6 +55,5 @@ $jar->set_cookie(1, 'auth_tkt', $ticket, '/', '.localdomain');
 $res = GET $url;
 ok t_cmp($res->code, 200, 'not redirected with 0.0.0.0 ip ticket');
 
-# arch-tag: 400f7949-821c-4b3b-b569-5459743766ee
 # vim:sw=2:et:sm:smartindent:ft=perl
 

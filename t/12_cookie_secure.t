@@ -54,6 +54,5 @@ ok t_cmp($cookie, qr/auth_tkt=/, 'cookie found');
 ok ! t_cmp($cookie, qr/; secure;/, 'no secure flag found');
 
 
-# arch-tag: 736259a8-5da3-4ebb-8ff9-2b2a67606afa
 # vim:sw=2:et:sm:smartindent:ft=perl
 

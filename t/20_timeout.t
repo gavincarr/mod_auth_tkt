@@ -80,6 +80,5 @@ ok t_cmp($res->content, qr/redirect.*timeout\.cgi\?post=1/is, 'take 5: redirect 
 
 
 
-# arch-tag: 7ea1a9f8-7efc-4745-8ef3-9fccd6e871ff
 # vim:sw=2:et:sm:smartindent:ft=perl
 

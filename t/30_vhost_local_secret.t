@@ -66,6 +66,5 @@ $res = GET $url;
 ok t_cmp($res->code, 307, 'redirect with incorrect IP address');
 
 
-# arch-tag: 0fe0f2c2-39c0-499e-8590-1344cf4057de
 # vim:sw=2:et:sm:smartindent:ft=perl
 

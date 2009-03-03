@@ -17,5 +17,4 @@ clean:
 	-rm -rf .libs
 
 
-# arch-tag: 229c3b2a-5f80-47ec-a20c-532d1ac780a8
 

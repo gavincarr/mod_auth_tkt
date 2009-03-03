@@ -78,6 +78,5 @@ ok t_cmp($res->code, 307);
 ok t_cmp($res->content, qr/redirect.*timeout\.cgi/is, 'take 5: redirect to timeout.cgi');
 
 
-# arch-tag: aabd3552-e2b6-47d8-95f4-2fe5b2ad301a
 # vim:sw=2:et:sm:smartindent:ft=perl
 
