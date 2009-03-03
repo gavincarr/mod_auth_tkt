@@ -73,6 +73,7 @@ typedef struct  {
 /* Per-server configuration */
 typedef struct {
   const char *secret;
+  const char *old_secret;
   const char *digest_type;
   int digest_sz;
   char *docroot;
@@ -183,6 +184,7 @@ create_auth_tkt_serv_config(apr_pool_t *p, server_rec* s)
 {
   auth_tkt_serv_conf *sconf = apr_palloc(p, sizeof(*sconf));
   sconf->secret = NULL;
+  sconf->old_secret = NULL;
   sconf->digest_type = NULL;
   sconf->digest_sz = 0;
   return sconf;
@@ -197,6 +199,7 @@ merge_auth_tkt_serv_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
   auth_tkt_serv_conf *sconf  = apr_palloc(p, sizeof(*sconf));
 
   sconf->secret      = (subdir->secret) ? subdir->secret : parent->secret;
+  sconf->old_secret  = (subdir->old_secret) ? subdir->old_secret : parent->old_secret;
   sconf->digest_type = (subdir->digest_type) ? subdir->digest_type : parent->digest_type;
   sconf->digest_sz   = (subdir->digest_sz) ? subdir->digest_sz : parent->digest_sz;
   return sconf;
@@ -326,6 +329,15 @@ setup_secret (cmd_parms *cmd, void *cfg, const char *param)
   return NULL;
 }
 
+static const char *
+setup_old_secret (cmd_parms *cmd, void *cfg, const char *param)
+{
+  auth_tkt_serv_conf *sconf = ap_get_module_config(cmd->server->module_config, 
+    &auth_tkt_module);
+  sconf->old_secret = param;
+  return NULL;
+}
+
 void
 setup_digest_sz (auth_tkt_serv_conf *sconf)
 {
@@ -452,6 +464,8 @@ static const command_rec auth_tkt_cmds[] =
     NULL, OR_AUTHCFG, "ticket timeout refresh flag (0-1)"),
   AP_INIT_TAKE1("TKTAuthSecret", setup_secret, 
     NULL, RSRC_CONF, "secret key to use in digest"),
+  AP_INIT_TAKE1("TKTAuthSecretOld", setup_old_secret, 
+    NULL, RSRC_CONF, "old/alternative secret key to check in digests"),
   AP_INIT_TAKE1("TKTAuthDigestType", setup_digest_type, 
     NULL, RSRC_CONF, "digest type to use [MD5|SHA256|SHA512], default MD5"),
   AP_INIT_FLAG("TKTAuthGuestLogin", ap_set_flag_slot,
@@ -1324,6 +1338,7 @@ dump_config(request_rec *r, auth_tkt_serv_conf *sconf, auth_tkt_dir_conf *conf)
   fprintf(stderr,"URI: %s\n", r->uri);
   fprintf(stderr,"Filename: %s\n",                    r->filename);
   fprintf(stderr,"TKTAuthSecret: %s\n", 	            sconf->secret);
+  fprintf(stderr,"TKTAuthSecretOld: %s\n", 	            sconf->old_secret);
   fprintf(stderr,"TKTAuthDigestType: %s\n", 	        sconf->digest_type);
   fprintf(stderr,"digest_sz: %d\n", 	                sconf->digest_sz);
   fprintf(stderr,"directory: %s\n", 		            conf->directory);
