@@ -1,103 +1,105 @@
-Brian Kuschak <bkuschak@yahoo.com> provided patches to convert
-relative redirect URLs to absolute ones using current schema/hostinfo
-settings.
 
-Sascha Hanssen <hanssen@meso.net> provided a ticket generator for
-Ruby on Rails, included in the contrib directory. Version 2.0.0rc3.
+Christian Folini <christian.folini@time-machine.ch> and an anonymous Swiss
+bank sponsored the changes to include SHA256/SHA512 support, and to
+integrate and test Michael Peters' TKTAuthSecretOld functionality. Version
+2.0.95.
 
-Peter Karman <peter@peknet.com>, Jose Luis Martinez 
-<jlmartinez@capside.com>, and Ton Voon <ton.voon@altinity.com>
-provided patches to Apache::AuthTkt to allow it to parse and 
-validate existing tickets. Version 2.0.0rc3.
+Michael Peters <mpeters@plusthree.com> provided a patch to support a
+TKTAuthSecretOld fallback secret, to facilitate refreshing secrets without
+losing existing sessions. Version 2.0.95.
 
-Charlie Brady <charlie_brady@mitel.com> provided patches to honour
-the X-Forwarded-Host header in cookie domains and back references, 
-if set (for use behind a proxy). Version 2.0.0rc2.
+Brian Kuschak <bkuschak@yahoo.com> provided patches to convert relative
+redirect URLs to absolute ones using current schema/hostinfo settings.
 
-Joost Cassee <joost@cassee.net> provide a patch to port mod_auth_tkt 
-to Apache 2.2 and provided help testing and debugging under that
-environment. Version 2.0.0rc2.
+Sascha Hanssen <hanssen@meso.net> provided a ticket generator for Ruby on
+Rails, included in the contrib directory. Version 2.0.0rc3.
 
-Philip Garrett <Philip.Garrett@manheim.com> provided patches to
-implement the TKTAuthGuestFallback functionlity, allowing validated
-users to fallback to guests on ticket timeout. Version 2.0.0rc2.
+Peter Karman <peter@peknet.com>, Jose Luis Martinez <jlmartinez@capside.com>,
+and Ton Voon <ton.voon@altinity.com> provided patches to Apache::AuthTkt to
+allow it to parse and validate existing tickets. Version 2.0.0rc3.
 
-Michael Peters <mpeters@plusthree.com> provided a patch to add an
-additional TKTAuthTimeoutPostURL directive to allow timeouts on 
-POSTs to be handled differently (since redirects back aren't sensible).
-Suggested by Perrin Hawkins. Version 2.0.0rc1.
+Charlie Brady <charlie_brady@mitel.com> provided patches to honour the
+X-Forwarded-Host header in cookie domains and back references, if set (for use
+behind a proxy). Version 2.0.0rc2.
 
-Jay Kline <slushpupie@gmail.com> provided a patch to add an apachever
-argument to configure (allowing mod_auth_tkt to be built with only
-an apache development environment available), and provided patches
-to build a debian package. Version 2.0.0b8.
+Joost Cassee <joost@cassee.net> provide a patch to port mod_auth_tkt to Apache
+2.2 and provided help testing and debugging under that environment. Version
+2.0.0rc2.
 
-Larry Lansing <llansing@fuzzynerd.com> provided a patch to separate
-out secure cookie functionality from TKTAuthRequireSSL flag to new
-TKTAuthCookieSecure flag. Version 2.0.0b7.
+Philip Garrett <Philip.Garrett@manheim.com> provided patches to implement the
+TKTAuthGuestFallback functionlity, allowing validated users to fallback to
+guests on ticket timeout. Version 2.0.0rc2.
 
-Viljo Viitanen <Viljo.Viitanen@helsinki.fi> provided patches to fix
-some URI and HTML escaping problems in the sample cgi scripts.
-Version 2.0.0b7.
+Michael Peters <mpeters@plusthree.com> provided a patch to add an additional
+TKTAuthTimeoutPostURL directive to allow timeouts on POSTs to be handled
+differently (since redirects back aren't sensible).  Suggested by Perrin
+Hawkins. Version 2.0.0rc1.
 
-Christian Ramseyer <rc@networkz.ch> pointed out a couple of build 
-problems on Solaris and contributed fixes. Version 2.0.0b7.
+Jay Kline <slushpupie@gmail.com> provided a patch to add an apachever argument
+to configure (allowing mod_auth_tkt to be built with only an apache development
+environment available), and provided patches to build a debian package. Version
+2.0.0b8.
+
+Larry Lansing <llansing@fuzzynerd.com> provided a patch to separate out secure
+cookie functionality from TKTAuthRequireSSL flag to new TKTAuthCookieSecure
+flag. Version 2.0.0b7.
+
+Viljo Viitanen <Viljo.Viitanen@helsinki.fi> provided patches to fix some URI
+and HTML escaping problems in the sample cgi scripts.  Version 2.0.0b7.
+
+Christian Ramseyer <rc@networkz.ch> pointed out a couple of build problems on
+Solaris and contributed fixes. Version 2.0.0b7.
 
 Ian Bicking <ianb@imagescape.com> provided patches for the excellent
-TKTAuthGuestLogin functionality, for additional debug output with the 
-DEBUG_VERBOSE flag, and contributed a more complete python AuthTicket 
-class. He also identified a bug with non-base64 quoted ticket values
-not being parsed correctly. Versions 2.0.0b5 and 2.0.0b6.
+TKTAuthGuestLogin functionality, for additional debug output with the
+DEBUG_VERBOSE flag, and contributed a more complete python AuthTicket class. He
+also identified a bug with non-base64 quoted ticket values not being parsed
+correctly. Versions 2.0.0b5 and 2.0.0b6.
 
-Viljo Viitanen <Viljo.Viitanen@helsinki.fi> pointed out that using 
-wildcard cookie domains by default allowed hostile servers on a shared 
-domain to steal and reuse tickets. So the default is now to default to
-the server name only - wildcard domains can easily be used, but must be
-done explicitly. Version 2.0.0b4.
+Viljo Viitanen <Viljo.Viitanen@helsinki.fi> pointed out that using wildcard
+cookie domains by default allowed hostile servers on a shared domain to steal
+and reuse tickets. So the default is now to default to the server name only -
+wildcard domains can easily be used, but must be done explicitly. Version
+2.0.0b4.
 
-Ian Bicking <ianb@imagescape.com> patched configure to work with a less
-capable getopt on FreeBSD, and provided patches to correct some 
-non-ISO-C89 c-isms that were causing problems for his gcc.
-Version 2.0.0b3.
+Ian Bicking <ianb@imagescape.com> patched configure to work with a less capable
+getopt on FreeBSD, and provided patches to correct some non-ISO-C89 c-isms that
+were causing problems for his gcc.  Version 2.0.0b3.
 
-Christian Klinger <cklinger@novareto.de> contributed python code to
-generate tickets, included in contrib/auth_ticket.pyc.
+Christian Klinger <cklinger@novareto.de> contributed python code to generate
+tickets, included in contrib/auth_ticket.pyc.  Version 2.0.0b2.
+
+Luc Germain and Marc-Andre Gaudreau at Universite de Sherbrooke contributed
+code to generate tickets from php, included in contrib/auth_ticket.inc.php.
 Version 2.0.0b2.
 
-Luc Germain and Marc-Andre Gaudreau at Universite de Sherbrooke 
-contributed code to generate tickets from php, included in 
-contrib/auth_ticket.inc.php. Version 2.0.0b2.
+Andreas Leimbacher <leimbachera@post.ch> submitted patches to fix some bogus
+logging calls, to add secure cookie support to TktUtil.pm, and contributed a
+configure script to improve the build process.  Version 2.0.0b2.
 
-Andreas Leimbacher <leimbachera@post.ch> submitted patches to fix some 
-bogus logging calls, to add secure cookie support to TktUtil.pm, and
-contributed a configure script to improve the build process.
-Version 2.0.0b2.
+Nick Cleaton <njc@netcraft.com> identified a significant vulnerability in the
+calculation of the ticket md5 checksum, potentially allowing an attacker to
+change or manipulate their username, tokens, and/or user data, and suggested a
+change to the md5 checksum calculation to fix the problem.  Version 2.0.0a1.
 
-Nick Cleaton <njc@netcraft.com> identified a significant vulnerability in
-the calculation of the ticket md5 checksum, potentially allowing an 
-attacker to change or manipulate their username, tokens, and/or user data, 
-and suggested a change to the md5 checksum calculation to fix the problem.
-Version 2.0.0a1.
-
-Joe Laffey <joe@laffeycomputer.com> did a thorough security review of the
-code and found buffer overflow vulnerabilities in both mod_auth_tkt 
-itself and tkt_cookie, and submitted patches to fix them.
-Version 1.3.11.
+Joe Laffey <joe@laffeycomputer.com> did a thorough security review of the code
+and found buffer overflow vulnerabilities in both mod_auth_tkt itself and
+tkt_cookie, and submitted patches to fix them.  Version 1.3.11.
 
 Matti Lattu <matti.lattu@helsinki.fi> provided patches to implement the
-TKTAuthRequireSSL directive, to require ssl and use secure ticket cookies. 
+TKTAuthRequireSSL directive, to require ssl and use secure ticket cookies.
 Version 1.3.11.
 
-Jason Burns <jason@dhdmedia.com> contributed code allowing tickets to be 
-passed via the url instead of via cookie, and suggested the initial 
-framework about how allowing multi-domain configurations might be able to
-work under mod_auth_tkt. 
-Version 1.3.9.
+Jason Burns <jason@dhdmedia.com> contributed code allowing tickets to be passed
+via the url instead of via cookie, and suggested the initial framework about
+how allowing multi-domain configurations might be able to work under
+mod_auth_tkt.  Version 1.3.9.
 
 Christian Folini <folinic@post.ch> submitted some great patches enabling
 multiple TKTAuthToken directives allowing alternative tokens; adding the
-strsep() function for use on Solaris; adding the scheme (http/https etc) 
-when generating back URLs; and suggested having user tokens made available 
-to other handlers (which lead to the REMOTE_USER_TOKENS env variable).
-Version 1.3.9.
+strsep() function for use on Solaris; adding the scheme (http/https etc) when
+generating back URLs; and suggested having user tokens made available to other
+handlers (which lead to the REMOTE_USER_TOKENS env variable).  Version 1.3.9.
 
+
+# vim:tw=75
