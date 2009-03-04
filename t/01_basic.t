@@ -11,7 +11,7 @@ use Apache::TestUtil;
 use Apache::TestRequest qw(GET);
 use HTTP::Cookies;
 use lib "cgi";
-use Apache::AuthTkt 2.0.9;
+use Apache::AuthTkt 2.1;
 
 plan tests => 7, need_lwp;
 

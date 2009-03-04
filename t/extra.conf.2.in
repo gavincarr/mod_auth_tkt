@@ -11,7 +11,7 @@ TKTAuthDigestType "MD5"
   AuthType None
   require valid-user
   TKTAuthLoginURL http://localhost/pub/login.cgi
-  TKTAuthDebug 3
+  TKTAuthDebug 2
 </Location>
 
 # secret_relative_url - test relative URL expansion
