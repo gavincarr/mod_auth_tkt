@@ -887,7 +887,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
 /* Check if this is a parseable and valid ticket
  * Returns 1 if valid, and the parsed ticket in parsed, 0 if not */
 static int
-valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
+valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed, int *force_refresh)
 {
   char *digest;
   auth_tkt_serv_conf *sconf =
@@ -895,7 +895,7 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
   auth_tkt_dir_conf *conf = 
     ap_get_module_config(r->per_dir_config, &auth_tkt_module);
 
-  /* Attempt to parse cookie */
+  /* Attempt to parse ticket */
   if (! parse_ticket(r, &ticket, parsed)) {
     if (conf->debug >= 1) {
       ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, r, 
@@ -910,7 +910,7 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
       parsed->uid, parsed->tokens, parsed->user_data, parsed->timestamp);
   }
 
-  /* Check hash against the current secret */
+  /* Check ticket hash against a calculated digest using the current secret */
   digest = ticket_digest(r, parsed, 0, sconf->secret);
   if (memcmp(ticket, digest, sconf->digest_sz) != 0) {
 
@@ -923,7 +923,7 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
       return 0;
     }
 
-    /* Digest mismatch - if old_secret is set, retest against that */
+    /* Digest mismatch - if old_secret is set, recalculate using that */
     else {
       if (conf->debug >= 1) {
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
@@ -935,6 +935,17 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
           "TKT valid_ticket: ticket hash (old secret) is also invalid - digest '%s', ticket '%s'", 
           digest, ticket);
         return 0;
+      }
+
+      /* Ticket validates against old_secret, so we should force a cookie refresh */
+      else {
+        if (force_refresh != NULL) {
+          if (conf->debug >= 1) {
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
+              "TKT valid_ticket: ticket_digest validated with old_secret - forcing a cookie refresh");
+          }
+          *force_refresh = 1;
+        }
       }
     }
   }
@@ -1010,8 +1021,8 @@ refresh_cookie(request_rec *r, auth_tkt *parsed, int timeout, int force_flag)
 
   if (conf->debug >= 1) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
-      "TKT: timeout %d, refresh %.3f, remainder %d, refresh_sec %.3f",
-	timeout, conf->timeout_refresh, remainder, refresh_sec);
+      "TKT refresh_cookie: timeout %d, refresh %.3f, remainder %d, refresh_sec %.3f, force_flag %d",
+	timeout, conf->timeout_refresh, remainder, refresh_sec, force_flag);
   }
 
   /* If less than our refresh_sec threshold, freshen the cookie */
@@ -1407,6 +1418,7 @@ auth_tkt_check(request_rec *r)
   const char *scheme = ap_http_method(r);
   int guest = 0;
   int timeout;
+  int force_cookie_refresh = 0;
   char *url = NULL;
 
   /* Default digest_type if not set */
@@ -1447,9 +1459,9 @@ auth_tkt_check(request_rec *r)
 
   /* Check for url ticket - either found (accept) or empty (reset/login) */
   ticket = get_url_ticket(r);
-  if (! ticket || ! valid_ticket(r, "url", ticket, parsed)) {
+  if (! ticket || ! valid_ticket(r, "url", ticket, parsed, &force_cookie_refresh)) {
     ticket = get_cookie_ticket(r);
-    if (! ticket || ! valid_ticket(r, "cookie", ticket, parsed)) {
+    if (! ticket || ! valid_ticket(r, "cookie", ticket, parsed, &force_cookie_refresh)) {
       if (conf->guest_login > 0) {
         guest = setup_guest(r, conf, parsed);
       }
@@ -1500,8 +1512,9 @@ auth_tkt_check(request_rec *r)
     return redirect(r, conf->unauth_url ? conf->unauth_url : conf->login_url);
   }
 
-  /* If a new guest login and the guest_cookie flag is set, force a cookie refresh */
-  if (guest && conf->guest_cookie > 0) {
+  /* If force_cookie_refresh flag is set (because the current ticket is using TKTAuthSecretOld),
+   * or this is a new guest login and the guest_cookie flag is set, force a cookie refresh */
+  if (force_cookie_refresh || (guest && conf->guest_cookie > 0)) {
     timeout = conf->timeout_sec == -1 ? DEFAULT_TIMEOUT_SEC : conf->timeout_sec;
     refresh_cookie(r, parsed, timeout, FORCE_REFRESH);
   }
