@@ -778,13 +778,12 @@ get_cookie_ticket(request_rec *r)
 
 /* Generate a ticket digest string from the given details */
 static char * 
-ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp)
+ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const char *secret)
 {
-  auth_tkt_serv_conf *sconf =
+  auth_tkt_serv_conf *sconf = 
     ap_get_module_config(r->server->module_config, &auth_tkt_module);
   auth_tkt_dir_conf *conf = 
     ap_get_module_config(r->per_dir_config, &auth_tkt_module);
-  const char *secret = sconf->secret;
   char *uid = parsed->uid;
   char *tokens = parsed->tokens;
   char *user_data = parsed->user_data;
@@ -911,12 +910,33 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed)
       parsed->uid, parsed->tokens, parsed->user_data, parsed->timestamp);
   }
 
-  /* Check hash */
-  digest = ticket_digest(r, parsed, 0);
+  /* Check hash against the current secret */
+  digest = ticket_digest(r, parsed, 0, sconf->secret);
   if (memcmp(ticket, digest, sconf->digest_sz) != 0) {
-    ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, r, 
-      "TKT valid_ticket: ticket found, but hash is invalid - digest '%s', ticket '%s'", digest, ticket);
-    return 0;
+
+    /* Digest mismatch - if no old secret set, fail */
+    if(sconf->old_secret == NULL) {
+      ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, r, 
+        "TKT valid_ticket: ticket hash (current secret) is invalid, and no old secret set "
+        "- digest '%s', ticket '%s'", 
+        digest, ticket);
+      return 0;
+    }
+
+    /* Digest mismatch - if old_secret is set, retest against that */
+    else {
+      if (conf->debug >= 1) {
+        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
+          "TKT valid_ticket: old_secret is set, checking ticket digest against that");
+      }
+      digest = ticket_digest(r, parsed, 0, sconf->old_secret);
+      if (memcmp(ticket, digest, sconf->digest_sz) != 0) {
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, r, 
+          "TKT valid_ticket: ticket hash (old secret) is also invalid - digest '%s', ticket '%s'", 
+          digest, ticket);
+        return 0;
+      }
+    }
   }
 
   return 1;
@@ -974,6 +994,8 @@ check_tokens(request_rec *r, char *tokens)
 static void
 refresh_cookie(request_rec *r, auth_tkt *parsed, int timeout, int force_flag)
 {
+  auth_tkt_serv_conf *sconf = 
+    ap_get_module_config(r->server->module_config, &auth_tkt_module);
   auth_tkt_dir_conf *conf = 
     ap_get_module_config(r->per_dir_config, &auth_tkt_module);
 
@@ -995,7 +1017,7 @@ refresh_cookie(request_rec *r, auth_tkt *parsed, int timeout, int force_flag)
   /* If less than our refresh_sec threshold, freshen the cookie */
   if (force_flag || remainder < refresh_sec) {
     char *ticket, *ticket_base64;
-    char *digest = ticket_digest(r, parsed, now);
+    char *digest = ticket_digest(r, parsed, now, sconf->secret);
     if (parsed->tokens) {
       ticket = apr_psprintf(r->pool,
         "%s%08x%s%c%s%c%s", 
