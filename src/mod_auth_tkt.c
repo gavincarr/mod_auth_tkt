@@ -851,7 +851,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
   else {
     digest = ap_md5_binary(r->pool, buf, len);
   }
-  if (conf->debug >= 2) {
+  if (conf->debug >= 3) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
       "TKT ticket_digest: digest0: '%s' (input length %d)", digest, len);
   }
@@ -873,7 +873,7 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
   else {
     digest = ap_md5_binary(r->pool, buf2, len);
   }
-  if (conf->debug >= 2) {
+  if (conf->debug >= 3) {
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
       "TKT ticket_digest: digest: '%s'", digest);
   }
@@ -1428,7 +1428,7 @@ auth_tkt_check(request_rec *r)
   }
 
   /* Dump config if debugging */
-  if (conf->debug >= 3)
+  if (conf->debug >= 2)
     dump_config(r, sconf, conf);
 
   /* Module not configured unless login_url or guest_login is set */
