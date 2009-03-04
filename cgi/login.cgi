@@ -254,8 +254,11 @@ back_esc: $back_esc
 back_html: $back_html
 have_cookies: $have_cookies
 ip_addr: $ip_addr
-</pre>
 EOD
+    if ($Apache::AuthTkt::VERSION >= 2.1) {
+      printf "digest_type: %s\n", $at->digest_type;
+    }
+    print "</pre>\n";
   }
 
   if ($fatal) {
