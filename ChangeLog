@@ -1,52 +1,276 @@
 ------------------------------------------------------------
+revno: 84
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 08:10:50 +1100
+message:
+  Bump version to 2.0.99b1, for initial beta release.
+------------------------------------------------------------
+revno: 83
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 08:09:20 +1100
+message:
+  Add unit tests for secret_old, t/15_secret_old.t.
+------------------------------------------------------------
+revno: 82
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 08:08:54 +1100
+message:
+  Tweak verbosity levels on a few debug statements.
+------------------------------------------------------------
+revno: 81
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 07:30:01 +1100
+message:
+  Add a TKTAuthSecretOld directive to t/extra.conf.*.in.
+------------------------------------------------------------
+revno: 80
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-03-04 18:33:58 +1100
+message:
+  Add code to force a cookie refresh if ticket is using TKTAuthSecretOld.
+------------------------------------------------------------
+revno: 79
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-03-04 18:20:29 +1100
+message:
+  Modify tkt_digest to do a fallback check on TKTAuthSecretOld, if set.
+------------------------------------------------------------
+revno: 78
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-03-04 07:49:52 +1100
+message:
+  Add initial TKTAuthSecretOld changes (patch from Michael Peters).
+------------------------------------------------------------
+revno: 77
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-03-04 07:39:23 +1100
+message:
+  Update CREDITS for dev21 changes.
+------------------------------------------------------------
+revno: 76
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-03-04 07:26:11 +1100
+message:
+  Merge in 2.0.1 changes from mainline.
+    ------------------------------------------------------------
+    revno: 53.1.8
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Sat 2009-02-28 20:01:48 +1100
+    message:
+      Update ChangeLog.
+    ------------------------------------------------------------
+    revno: 53.1.7
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Sat 2009-02-28 20:01:17 +1100
+    message:
+      Bump version to 2.0.1 to pickup cgi fixes, for re-release.
+    ------------------------------------------------------------
+    revno: 53.1.6
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Fri 2009-02-27 21:39:24 +1100
+    message:
+      Add TKTAuthSecret to conf/auth_tkt_cgi.conf file as well; comment both out initially.
+    ------------------------------------------------------------
+    revno: 53.1.5
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Fri 2009-02-27 21:24:41 +1100
+    message:
+      Fix typo in login.cgi.
+    ------------------------------------------------------------
+    revno: 53.1.4
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Fri 2009-02-27 17:41:46 +1100
+    message:
+      Bump version to 2.0.0, for release.
+    ------------------------------------------------------------
+    revno: 53.1.3
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Fri 2009-02-27 17:39:03 +1100
+    message:
+      Add TKTAuthDebug to doc/mod_auth_tkt.pod.
+    ------------------------------------------------------------
+    revno: 53.1.2
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Thu 2009-02-19 07:53:53 +1100
+    message:
+      Remove old arch-tags from all files.
+    ------------------------------------------------------------
+    revno: 53.1.1
+    committer: Gavin Carr <gavin@openfusion.com.au>
+    branch nick: trunk
+    timestamp: Thu 2009-02-19 07:51:36 +1100
+    message:
+      Minor tweaks to doc/mod_auth_tkt.pod.
+------------------------------------------------------------
+revno: 75
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Tue 2009-03-03 08:14:08 +1100
+message:
+  Tweak Apache::AuthTkt version requirements in TKTAuthDigestType pod.
+------------------------------------------------------------
+revno: 74
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Tue 2009-03-03 08:11:15 +1100
+message:
+  Add an Apache::AuthTkt note to TKTAuthDigestType pod.
+------------------------------------------------------------
+revno: 73
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Tue 2009-03-03 08:09:25 +1100
+message:
+  Add TKTAuthDigestType directives to sample configs.
+------------------------------------------------------------
+revno: 72
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Tue 2009-03-03 08:06:34 +1100
+message:
+  Add an initial TKTAuthDigestType section to pod.
+------------------------------------------------------------
+revno: 71
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Tue 2009-03-03 07:50:53 +1100
+message:
+  Bump version number to 2.0.95.
+------------------------------------------------------------
+revno: 70
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Tue 2009-03-03 07:49:53 +1100
+message:
+  Add SHA512 support to mod_auth_tkt.c.
+------------------------------------------------------------
+revno: 69
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-02-25 22:34:49 +1100
+message:
+  Add separate test_{md5,sha256} targets to test Makefile.
+------------------------------------------------------------
+revno: 68
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-02-25 22:34:19 +1100
+message:
+  Minor tweaks to extra.conf.2.in; revert DigestType to MD5.
+------------------------------------------------------------
+revno: 67
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-02-25 22:13:03 +1100
+message:
+  Fix problems with digest_type not merging down correctly into vhosts.
+------------------------------------------------------------
+revno: 66
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-02-25 20:01:46 +1100
+message:
+  Minor tweaks to t/01_basic.t.
+------------------------------------------------------------
+revno: 65
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-02-25 19:59:29 +1100
+message:
+  Minor fixes to SHA256 digest invocations.
+------------------------------------------------------------
+revno: 64
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Wed 2009-02-25 19:58:29 +1100
+message:
+  Fix pointer problems in SHA*_End routines in sha2.c.
+------------------------------------------------------------
+revno: 63
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-02-19 21:25:33 +1100
+message:
+  First-pass unit test tweaks for SHA2 testing; add a t/README.
+------------------------------------------------------------
+revno: 62
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-02-19 17:56:52 +1100
+message:
+  Change a couple of usages of SHA256_BLOCK_LENGTH to sconf->digest_sz.
+------------------------------------------------------------
+revno: 61
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-02-19 07:44:15 +1100
+message:
+  Use sha2.h SHA256_BLOCK_LENGTH instead of local SHA256_DIGEST_SZ; minor fixes.
+------------------------------------------------------------
 revno: 60
 committer: Gavin Carr <gavin@openfusion.com.au>
-branch nick: trunk
-timestamp: Sat 2009-02-28 20:01:17 +1100
+branch nick: dev21
+timestamp: Thu 2009-02-19 07:40:55 +1100
 message:
-  Bump version to 2.0.1 to pickup cgi fixes, for re-release.
+  Add local copies of sha2.{h,c}.
 ------------------------------------------------------------
 revno: 59
 committer: Gavin Carr <gavin@openfusion.com.au>
-branch nick: trunk
-timestamp: Fri 2009-02-27 21:39:24 +1100
+branch nick: dev21
+timestamp: Thu 2009-02-19 07:29:42 +1100
 message:
-  Add TKTAuthSecret to conf/auth_tkt_cgi.conf file as well; comment both out initially.
+  Bump TKT_AUTH_VERSION to 2.1.0b1.
 ------------------------------------------------------------
 revno: 58
 committer: Gavin Carr <gavin@openfusion.com.au>
-branch nick: trunk
-timestamp: Fri 2009-02-27 21:24:41 +1100
+branch nick: dev21
+timestamp: Thu 2009-02-19 07:28:25 +1100
 message:
-  Fix typo in login.cgi.
+  Change digest_type SHA1 to SHA256.
 ------------------------------------------------------------
 revno: 57
 committer: Gavin Carr <gavin@openfusion.com.au>
-branch nick: trunk
-timestamp: Fri 2009-02-27 17:41:46 +1100
+branch nick: dev21
+timestamp: Wed 2009-02-18 09:35:33 +1100
 message:
-  Bump version to 2.0.0, for release.
+  Replace MD5_DIGEST_SZ usages with sconf->digest_sz.
 ------------------------------------------------------------
 revno: 56
 committer: Gavin Carr <gavin@openfusion.com.au>
-branch nick: trunk
-timestamp: Fri 2009-02-27 17:39:03 +1100
+branch nick: dev21
+timestamp: Wed 2009-02-18 09:28:12 +1100
 message:
-  Add TKTAuthDebug to doc/mod_auth_tkt.pod.
+  Add digest_type and digest_sz to sconf.
 ------------------------------------------------------------
 revno: 55
 committer: Gavin Carr <gavin@openfusion.com.au>
-branch nick: trunk
-timestamp: Thu 2009-02-19 07:53:53 +1100
+branch nick: dev21
+timestamp: Wed 2009-02-18 07:47:12 +1100
 message:
-  Remove old arch-tags from all files.
+  Replace MD5andTSTAMP #define with MD5_DIGEST_SZ + TSTAMP_SZ.
 ------------------------------------------------------------
 revno: 54
 committer: Gavin Carr <gavin@openfusion.com.au>
-branch nick: trunk
-timestamp: Thu 2009-02-19 07:51:36 +1100
+branch nick: dev21
+timestamp: Tue 2009-02-17 08:13:47 +1100
 message:
-  Minor tweaks to doc/mod_auth_tkt.pod.
+  Add initial TKTAuthDigestType directive, stored in sconf->digest_type.
 ------------------------------------------------------------
 revno: 53
 committer: Gavin Carr <gavin@openfusion.com.au>
