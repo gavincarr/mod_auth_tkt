@@ -767,7 +767,7 @@ get_cookie_ticket(request_rec *r)
     if (conf->debug >= 1) {
       ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
         "TKT get_cookie_tkt: found cookie ticket, "
-        "but it's too short for a %s digest (%d < %d)",
+        "but it's too short for a %s digest (%zu < %d)",
         sconf->digest_type, strlen(cr->cookie), sconf->digest_sz + TSTAMP_SZ);
     }
     return NULL;
