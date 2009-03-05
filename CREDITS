@@ -2,11 +2,11 @@
 Christian Folini <christian.folini@time-machine.ch> and an anonymous Swiss
 bank sponsored the changes to include SHA256/SHA512 support, and to
 integrate and test Michael Peters' TKTAuthSecretOld functionality. Version
-2.0.95.
+2.0.99b1.
 
 Michael Peters <mpeters@plusthree.com> provided a patch to support a
 TKTAuthSecretOld fallback secret, to facilitate refreshing secrets without
-losing existing sessions. Version 2.0.95.
+losing existing sessions. Version 2.0.99b1.
 
 Brian Kuschak <bkuschak@yahoo.com> provided patches to convert relative
 redirect URLs to absolute ones using current schema/hostinfo settings.
