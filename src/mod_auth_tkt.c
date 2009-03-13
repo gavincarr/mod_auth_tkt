@@ -932,7 +932,7 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed,
     else {
       if (conf->debug >= 1) {
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r, 
-          "TKT valid_ticket: old_secret is set, checking ticket digest against that");
+          "TKT valid_ticket: ticket hash (current secret) is invalid, but old_secret is set - checking ticket digest against that");
       }
       digest = ticket_digest(r, parsed, 0, sconf->old_secret);
       if (memcmp(ticket, digest, sconf->digest_sz) != 0) {
