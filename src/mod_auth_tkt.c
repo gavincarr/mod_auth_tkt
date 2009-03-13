@@ -609,6 +609,11 @@ cookie_match(void *result, const char *key, const char *cookie)
 
     value = (char*) cookie;
     while ((value = strstr(value, cookie_name))) {
+      /* cookie_name must be preceded by a space or be at the very beginning */
+      if (value > cookie && *(value-1) != ' ') {
+        value++;
+        continue;
+      }
       /* Cookie includes our cookie_name - copy (first) value into cookiebuf */
       value += strlen(cookie_name);
       cookiebuf = apr_pstrdup(cr->r->pool, value);
