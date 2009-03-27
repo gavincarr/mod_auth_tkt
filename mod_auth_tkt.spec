@@ -9,7 +9,7 @@
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
-Version: 2.0.99b1
+Version: 2.0.99b2
 Release: 1%{?org_tag}%{?dist}
 License: GPL
 Group: Applications/System
