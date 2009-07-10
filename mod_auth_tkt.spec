@@ -9,7 +9,7 @@
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
-Version: 2.0.99b2
+Version: 2.1.0
 Release: 1%{?org_tag}%{?dist}
 License: GPL
 Group: Applications/System
@@ -97,6 +97,21 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 /var/www/auth/*.cgi
 
 %changelog
+* Fri Jul 10 2009 Gavin Carr <gavin@openfusion.com.au> 2.1.0
+- Bump version number to 2.1.0 for final 2.1 release.
+
+* Sat Mar 28 2009 Gavin Carr <gavin@openfusion.com.au> 2.0.99b2
+- Bump version number to 2.0.99b2, second beta release of 2.1 branch.
+- Fix bug with partial-cookie-names incorrectly matching.
+
+* Thu Mar 05 2009 Gavin Carr <gavin@openfusion.com.au> 2.0.99b1
+- Bump version number to 2.0.99b1, first beta release of 2.1 branch.
+- Add support for SHA256 digests.
+- Add TKTAuthSecretOld support.
+
+* Fri Feb 27 2009 Gavin Carr <gavin@openfusion.com.au> 2.0.0-1
+- Bump to final version 2.0.0.
+
 * Fri Feb 27 2009 Gavin Carr <gavin@openfusion.com.au> 2.0.0-1
 - Bump to final version 2.0.0.
 
