@@ -1,4 +1,67 @@
 ------------------------------------------------------------
+revno: 93
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Fri 2009-07-10 17:54:30 +1000
+message:
+  Bump version to 2.1.0, for final 2.1 release.
+------------------------------------------------------------
+revno: 92
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Sat 2009-03-28 10:29:12 +1100
+message:
+  Bump version number to 2.0.99b2.
+------------------------------------------------------------
+revno: 91
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Fri 2009-03-13 16:54:24 +1100
+message:
+  Tweak checking old_secret message per Christian's suggestions.
+------------------------------------------------------------
+revno: 90
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Fri 2009-03-13 16:05:55 +1100
+message:
+  Add unit test for partial-cookie-name matching bug, and fix.
+------------------------------------------------------------
+revno: 89
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 11:23:23 +1100
+message:
+  Tweak 2.0.99b1 version numbers in CREDITS.
+------------------------------------------------------------
+revno: 88
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 10:14:32 +1100
+message:
+  Tweak comments in conf/02_auth_tkt.conf.
+------------------------------------------------------------
+revno: 87
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 10:12:47 +1100
+message:
+  Add digest_type debug output to login.cgi if Apache::AuthTkt version is new enough.
+------------------------------------------------------------
+revno: 86
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 09:05:31 +1100
+message:
+  Tweak a debug message sprintf format to silence 64-bit warning.
+------------------------------------------------------------
+revno: 85
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: dev21
+timestamp: Thu 2009-03-05 08:11:31 +1100
+message:
+  Freshen ChangeLog.
+------------------------------------------------------------
 revno: 84
 committer: Gavin Carr <gavin@openfusion.com.au>
 branch nick: dev21
@@ -55,68 +118,12 @@ timestamp: Wed 2009-03-04 07:39:23 +1100
 message:
   Update CREDITS for dev21 changes.
 ------------------------------------------------------------
-revno: 76
+revno: 76 [merge]
 committer: Gavin Carr <gavin@openfusion.com.au>
 branch nick: dev21
 timestamp: Wed 2009-03-04 07:26:11 +1100
 message:
   Merge in 2.0.1 changes from mainline.
-    ------------------------------------------------------------
-    revno: 53.1.8
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Sat 2009-02-28 20:01:48 +1100
-    message:
-      Update ChangeLog.
-    ------------------------------------------------------------
-    revno: 53.1.7
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Sat 2009-02-28 20:01:17 +1100
-    message:
-      Bump version to 2.0.1 to pickup cgi fixes, for re-release.
-    ------------------------------------------------------------
-    revno: 53.1.6
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Fri 2009-02-27 21:39:24 +1100
-    message:
-      Add TKTAuthSecret to conf/auth_tkt_cgi.conf file as well; comment both out initially.
-    ------------------------------------------------------------
-    revno: 53.1.5
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Fri 2009-02-27 21:24:41 +1100
-    message:
-      Fix typo in login.cgi.
-    ------------------------------------------------------------
-    revno: 53.1.4
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Fri 2009-02-27 17:41:46 +1100
-    message:
-      Bump version to 2.0.0, for release.
-    ------------------------------------------------------------
-    revno: 53.1.3
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Fri 2009-02-27 17:39:03 +1100
-    message:
-      Add TKTAuthDebug to doc/mod_auth_tkt.pod.
-    ------------------------------------------------------------
-    revno: 53.1.2
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Thu 2009-02-19 07:53:53 +1100
-    message:
-      Remove old arch-tags from all files.
-    ------------------------------------------------------------
-    revno: 53.1.1
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: trunk
-    timestamp: Thu 2009-02-19 07:51:36 +1100
-    message:
-      Minor tweaks to doc/mod_auth_tkt.pod.
 ------------------------------------------------------------
 revno: 75
 committer: Gavin Carr <gavin@openfusion.com.au>
@@ -580,47 +587,12 @@ timestamp: Tue 2006-11-28 07:33:59 +1100
 message:
   Tweak configure to support apachever=2.2.
 ------------------------------------------------------------
-revno: 9
+revno: 9 [merge]
 committer: Gavin Carr <gavin@openfusion.com.au>
 branch nick: dev
 timestamp: Mon 2006-11-27 18:12:09 +1100
 message:
   Sync TKTAuthGuestFallback changes.
-    ------------------------------------------------------------
-    revno: 1.1.5
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: mat-guest-fallback
-    timestamp: Mon 2006-11-27 08:08:47 +1100
-    message:
-      Add TKTAuthGuestFallback docs to manpage.
-    ------------------------------------------------------------
-    revno: 1.1.4
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: mat-guest-fallback
-    timestamp: Thu 2006-09-21 09:20:54 +1000
-    message:
-      Add guest fallback tests.
-    ------------------------------------------------------------
-    revno: 1.1.3
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: mat-guest-fallback
-    timestamp: Thu 2006-09-21 07:31:07 +1000
-    message:
-      Add initial TKTAuthGuestFallback support.
-    ------------------------------------------------------------
-    revno: 1.1.2
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: mat-guest-fallback
-    timestamp: Wed 2006-09-20 08:33:00 +1000
-    message:
-      Sync with upstream.
-    ------------------------------------------------------------
-    revno: 1.1.1
-    committer: Gavin Carr <gavin@openfusion.com.au>
-    branch nick: mat-guest-fallback
-    timestamp: Mon 2006-09-18 08:07:57 +1000
-    message:
-      Sync with upstream.
 ------------------------------------------------------------
 revno: 8
 committer: Gavin Carr <gavin@openfusion.com.au>
@@ -677,3 +649,5 @@ branch nick: dev
 timestamp: Wed 2006-09-13 07:41:23 +1000
 message:
   Initial import.
+------------------------------------------------------------
+Use --include-merges or -n0 to see merged revisions.
