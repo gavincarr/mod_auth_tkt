@@ -1,0 +1,11 @@
+.*.sw?
+Makedefs
+Makefile.old
+*.a
+*.la
+*.lo
+*.o
+*.slo
+*.so
+doc/mod_auth_tkt.3
+src/.libs
