@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Bug in mod_auth_tkt <= 2.0.99b1 would match a partial cookie name,
 # using the wrong ticket to try and authenticate against, resulting
