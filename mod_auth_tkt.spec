@@ -11,7 +11,7 @@ Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
 Version: 2.1.0
 Release: 1%{?org_tag}%{?dist}
-License: GPL
+License: Apache
 Group: Applications/System
 Source: http://www.openfusion.com.au/labs/dist/mod_auth_tkt-%{version}.tar.gz
 URL: http://www.openfusion.com.au/labs/mod_auth_tkt/
