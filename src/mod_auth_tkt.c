@@ -498,8 +498,6 @@ static const command_rec auth_tkt_cmds[] =
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, debug),
     OR_AUTHCFG, "debug level (1-3, higher for more debug output)"),
   AP_INIT_TAKE1("TKTAuthQuerySeparator", setup_query_separator, 
-    NULL, RSRC_CONF, "Character used in query strings to separate arguments (default ';')"),
-  AP_INIT_TAKE1("TKTAuthQuerySeparator", setup_query_separator, 
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, query_separator),
     OR_AUTHCFG, "Character used in query strings to separate arguments (default ';')"),
   {NULL},
