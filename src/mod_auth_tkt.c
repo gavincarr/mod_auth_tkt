@@ -1273,7 +1273,7 @@ redirect(request_rec *r, char *location)
 
   /* If back_cookie_name not set, add a back url argument to url */
   else {
-    char sep = ap_strchr(location, '?') ? conf->query_separator : '?';
+    char sep = ap_strchr(location, '?') ? conf->query_separator[0] : '?';
     url = apr_psprintf(r->pool, "%s%c%s=%s", 
       location, sep, back_arg_name, back);
   }
