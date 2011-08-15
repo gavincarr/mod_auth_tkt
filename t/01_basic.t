@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Basic mod_auth_tkt testing, with minimal config
 #

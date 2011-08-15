@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Virtual host mod_auth_tkt testing, local secret
 #

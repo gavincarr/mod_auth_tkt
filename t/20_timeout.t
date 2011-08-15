@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Test auth ticket timeouts (TKTAuthTimeoutMin set to 1)
 #
