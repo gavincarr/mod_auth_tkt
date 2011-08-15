@@ -38,6 +38,7 @@
 #define REMOTE_USER_TOKENS_ENV "REMOTE_USER_TOKENS"
 #define DEFAULT_TIMEOUT_SEC 7200
 #define DEFAULT_GUEST_USER "guest"
+#define QUERY_SEPARATOR ';'
 
 #define FORCE_REFRESH 1
 #define CHECK_REFRESH 0
@@ -68,6 +69,7 @@ typedef struct  {
   char *guest_user;
   int guest_fallback;
   int debug;
+  const char *query_separator;
 } auth_tkt_dir_conf;
 
 /* Per-server configuration */
@@ -142,6 +144,7 @@ create_auth_tkt_config(apr_pool_t *p, char* path)
   conf->guest_user = NULL;
   conf->guest_fallback = -1;
   conf->debug = -1;
+  conf->query_separator = QUERY_SEPARATOR;
   return conf;  
 }
 
@@ -174,6 +177,7 @@ merge_auth_tkt_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
   conf->guest_user = (subdir->guest_user) ? subdir->guest_user : parent->guest_user;
   conf->guest_fallback = (subdir->guest_fallback >= 0) ?  subdir->guest_fallback : parent->guest_fallback;
   conf->debug = (subdir->debug >= 0) ? subdir->debug : parent->debug;
+  conf->query_separator = (subdir->query_separator) ? subdir->query_separator : parent->query_separator;
 
   return conf;
 }
@@ -338,6 +342,16 @@ setup_old_secret (cmd_parms *cmd, void *cfg, const char *param)
   return NULL;
 }
 
+static const char *
+setup_query_separator (cmd_parms *cmd, void *cfg, const char *param)
+{
+  if (strcmp(param, ";") != 0 && strcmp(param, "&") != 0)
+    return "QuerySeparator must be either ';' or '&'.";
+  auth_tkt_dir_conf *conf = (auth_tkt_dir_conf *)cfg;
+  conf->query_separator = param;
+  return NULL;
+}
+
 void
 setup_digest_sz (auth_tkt_serv_conf *sconf)
 {
@@ -483,6 +497,9 @@ static const command_rec auth_tkt_cmds[] =
   AP_INIT_ITERATE("TKTAuthDebug", set_auth_tkt_debug, 
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, debug),
     OR_AUTHCFG, "debug level (1-3, higher for more debug output)"),
+  AP_INIT_TAKE1("TKTAuthQuerySeparator", setup_query_separator, 
+    (void *)APR_OFFSETOF(auth_tkt_dir_conf, query_separator),
+    OR_AUTHCFG, "Character used in query strings to separate arguments (default ';')"),
   {NULL},
 };
 
@@ -1256,7 +1273,7 @@ redirect(request_rec *r, char *location)
 
   /* If back_cookie_name not set, add a back url argument to url */
   else {
-    char sep = ap_strchr(location, '?') ? ';' : '?';
+    char sep = ap_strchr(location, '?') ? conf->query_separator[0] : '?';
     url = apr_psprintf(r->pool, "%s%c%s=%s", 
       location, sep, back_arg_name, back);
   }
@@ -1398,6 +1415,7 @@ dump_config(request_rec *r, auth_tkt_serv_conf *sconf, auth_tkt_dir_conf *conf)
   fprintf(stderr,"TKTAuthGuestCookie: %d\n",          conf->guest_cookie);
   fprintf(stderr,"TKTAuthGuestUser: %s\n",            conf->guest_user);
   fprintf(stderr,"TKTAuthGuestFallback %d\n",         conf->guest_fallback);
+  fprintf(stderr,"TKTAuthQuerySeparator: %s\n",	        conf->query_separator);
   if (conf->auth_token->nelts > 0) {
     char ** auth_token = (char **) conf->auth_token->elts;
     int i;
