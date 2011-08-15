@@ -96,11 +96,16 @@ else
 fi
 echo "BASEDIR = $DIR" >> Makedefs
 
-if [ -d /usr/share/man ]; then
-  echo "MANPATH = /usr/share/man" >> Makedefs
+if [ "$MANPATH" != "" ]; then
+    echo "MANPATH = $MANPATH" >> Makedefs
 else
-  echo "MANPATH = /usr/man" >> Makedefs
+  if [ -d /usr/share/man ]; then
+    echo "MANPATH = /usr/share/man" >> Makedefs
+  else
+    echo "MANPATH = /usr/man" >> Makedefs
+  fi
 fi
+
 MAT_VERSION=`cat VERSION`
 echo "MAT_VERSION = $MAT_VERSION" >> Makedefs
 
