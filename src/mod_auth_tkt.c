@@ -1415,7 +1415,7 @@ dump_config(request_rec *r, auth_tkt_serv_conf *sconf, auth_tkt_dir_conf *conf)
   fprintf(stderr,"TKTAuthGuestCookie: %d\n",            conf->guest_cookie);
   fprintf(stderr,"TKTAuthGuestUser: %s\n",              conf->guest_user);
   fprintf(stderr,"TKTAuthGuestFallback %d\n",           conf->guest_fallback);
-  fprintf(stderr,"TKTAuthQuerySeparator: %s\n",         conf->query_separator);
+  fprintf(stderr,"TKTAuthQuerySeparator: %c\n",         conf->query_separator);
   if (conf->auth_token->nelts > 0) {
     char ** auth_token = (char **) conf->auth_token->elts;
     int i;
