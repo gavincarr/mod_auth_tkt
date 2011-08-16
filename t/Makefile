@@ -7,6 +7,7 @@ $(TARGET):
 	cd ../src && make
 
 $(MODULE): $(TARGET)
+	mkdir -p modules
 	$(APXS) -S LIBEXECDIR=$(BASEDIR)/t/modules -i ../src/$(TARGET)
 
 test_md5: $(MODULE)
