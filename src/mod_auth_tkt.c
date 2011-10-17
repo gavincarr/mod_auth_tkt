@@ -1203,7 +1203,8 @@ redirect(request_rec *r, char *location)
   char *domain = get_domain(r,conf);
   char *back_cookie_name = conf->back_cookie_name;
   char *back_arg_name = conf->back_arg_name;
-  char *url, *cookie, *back;
+  char *url = location;
+  char *cookie, *back;
   const char *hostinfo = 0;
   int port;
 
@@ -1272,7 +1273,7 @@ redirect(request_rec *r, char *location)
   }
 
   /* If back_cookie_name not set, add a back url argument to url */
-  else {
+  else if (back_arg_name) {
     char sep = ap_strchr(location, '?') ? conf->query_separator[0] : '?';
     url = apr_psprintf(r->pool, "%s%c%s=%s",
       location, sep, back_arg_name, back);
@@ -1449,6 +1450,10 @@ auth_tkt_check(request_rec *r)
     sconf->digest_type = DEFAULT_DIGEST_TYPE;
     setup_digest_sz(sconf);
   }
+
+  /* Map "NULL" back_arg_name to NULL */
+  if (conf->back_arg_name && strcmp(conf->back_arg_name, "NULL") == 0)
+    conf->back_arg_name = NULL;
 
   /* Dump config if debugging */
   if (conf->debug >= 2)
