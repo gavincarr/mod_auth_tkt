@@ -144,7 +144,7 @@ create_auth_tkt_config(apr_pool_t *p, char* path)
   conf->guest_user = NULL;
   conf->guest_fallback = -1;
   conf->debug = -1;
-  conf->query_separator = QUERY_SEPARATOR;
+  conf->query_separator = (char *)QUERY_SEPARATOR;
   return conf;
 }
 
@@ -453,7 +453,7 @@ static const command_rec auth_tkt_cmds[] =
 #endif
   AP_INIT_TAKE1("TKTAuthBackCookieName", ap_set_string_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, back_cookie_name),
-    OR_AUTHCFG, "name to use for back cookie (NULL for none)"),
+    OR_AUTHCFG, "name to use for back cookie (default: none)"),
   AP_INIT_TAKE1("TKTAuthBackArgName", ap_set_string_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, back_arg_name),
     OR_AUTHCFG, "name to use for back url argument (NULL for none)"),
@@ -468,7 +468,7 @@ static const command_rec auth_tkt_cmds[] =
     OR_AUTHCFG, "whether to set secure flag on ticket cookies"),
   AP_INIT_ITERATE("TKTAuthToken", set_auth_tkt_token,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, auth_token),
-    OR_AUTHCFG, "token required to access this area (NULL for none)"),
+    OR_AUTHCFG, "token required to access this area (default: none)"),
   AP_INIT_ITERATE("TKTAuthTimeout", set_auth_tkt_timeout,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, timeout_sec),
     OR_AUTHCFG, "ticket inactivity timeout, in seconds or units [smhdwMy]"),
@@ -481,25 +481,25 @@ static const command_rec auth_tkt_cmds[] =
   AP_INIT_TAKE1("TKTAuthSecretOld", setup_old_secret,
     NULL, RSRC_CONF, "old/alternative secret key to check in digests"),
   AP_INIT_TAKE1("TKTAuthDigestType", setup_digest_type,
-    NULL, RSRC_CONF, "digest type to use [MD5|SHA256|SHA512], default MD5"),
+    NULL, RSRC_CONF, "digest type to use [MD5|SHA256|SHA512], default: MD5"),
   AP_INIT_FLAG("TKTAuthGuestLogin", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_login),
     OR_AUTHCFG, "whether to log people in as guest if no other auth available"),
   AP_INIT_FLAG("TKTAuthGuestCookie", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_cookie),
-    OR_AUTHCFG, "whether to set a cookie when accepting guest users (default off)"),
+    OR_AUTHCFG, "whether to set a cookie when accepting guest users (default: off)"),
   AP_INIT_TAKE1("TKTAuthGuestUser", ap_set_string_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_user),
     OR_AUTHCFG, "username to use for guest logins"),
   AP_INIT_FLAG("TKTAuthGuestFallback", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_fallback),
-    OR_AUTHCFG, "whether to fall back to guest on an expired ticket (default off)"),
+    OR_AUTHCFG, "whether to fall back to guest on an expired ticket (default: off)"),
   AP_INIT_ITERATE("TKTAuthDebug", set_auth_tkt_debug,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, debug),
     OR_AUTHCFG, "debug level (1-3, higher for more debug output)"),
   AP_INIT_TAKE1("TKTAuthQuerySeparator", setup_query_separator,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, query_separator),
-    OR_AUTHCFG, "Character used in query strings to separate arguments (default ';')"),
+    OR_AUTHCFG, "Character used in query strings to separate arguments (default: ';')"),
   {NULL},
 };
 
