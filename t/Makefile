@@ -3,10 +3,10 @@ include ../Makedefs
 
 MODULE=modules/mod_auth_tkt.so
 
-$(TARGET): 
+../src/$(TARGET): ../src/mod_auth_tkt.c
 	cd ../src && make
 
-$(MODULE): $(TARGET)
+$(MODULE): ../src/$(TARGET)
 	mkdir -p modules
 	$(APXS) -S LIBEXECDIR=$(BASEDIR)/t/modules -i ../src/$(TARGET)
 
