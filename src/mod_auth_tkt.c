@@ -456,7 +456,7 @@ static const command_rec auth_tkt_cmds[] =
     OR_AUTHCFG, "name to use for back cookie (default: none)"),
   AP_INIT_TAKE1("TKTAuthBackArgName", ap_set_string_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, back_arg_name),
-    OR_AUTHCFG, "name to use for back url argument (NULL for none)"),
+    OR_AUTHCFG, "name to use for back url argument ('None' to not use)"),
   AP_INIT_FLAG("TKTAuthIgnoreIP", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, ignore_ip),
     OR_AUTHCFG, "whether to ignore remote IP address in ticket"),
@@ -468,7 +468,7 @@ static const command_rec auth_tkt_cmds[] =
     OR_AUTHCFG, "whether to set secure flag on ticket cookies"),
   AP_INIT_ITERATE("TKTAuthToken", set_auth_tkt_token,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, auth_token),
-    OR_AUTHCFG, "token required to access this area (default: none)"),
+    OR_AUTHCFG, "token required to access this area (NULL for none)"),
   AP_INIT_ITERATE("TKTAuthTimeout", set_auth_tkt_timeout,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, timeout_sec),
     OR_AUTHCFG, "ticket inactivity timeout, in seconds or units [smhdwMy]"),
@@ -1451,8 +1451,8 @@ auth_tkt_check(request_rec *r)
     setup_digest_sz(sconf);
   }
 
-  /* Map "NULL" back_arg_name to NULL */
-  if (conf->back_arg_name && strcmp(conf->back_arg_name, "NULL") == 0)
+  /* Map "None" back_arg_name to NULL */
+  if (conf->back_arg_name && strcmp(conf->back_arg_name, "None") == 0)
     conf->back_arg_name = NULL;
 
   /* Dump config if debugging */
