@@ -1,0 +1,69 @@
+<?
+
+#
+# auth_tkt.rvt
+#
+# Author: David McNett - http://macnugget.org/
+# Date:   29-May-2012
+#
+# This Tcl/Apache Rivet code is a bare-bones backend authentication
+# example to generate cookie tickets compatible with the mod_auth_tkt
+# Apache module.
+#
+# See http://www.openfusion.com.au/labs/mod_auth_tkt/ for more detail
+#
+
+package require sha256
+package require auth_tkt
+
+unset -nocomplain response
+load_response
+
+# Automatically pull the shared secret from Apache config file:
+#
+# set key [::auth_tkt::get_secret_key /usr/local/etc/apache/httpd.conf]
+#
+# Or just hard-code the shared secret here:
+#
+set key "SHARED_SECRET"
+
+#
+# Optionally set a list of user tokens to embed in the ticket:
+#
+set tokenlist [list token_one token_two]
+#
+
+#
+# Get the user's IP address from Apache
+#
+set ip [env REMOTE_ADDR]
+#
+# Or ignore IP (TKTAuthIgnoreIP on in apache config)
+#
+# set ip "0.0.0.0"
+
+#
+# set http_only to 1 or 0 if you want to enforce https (TKTAuthCookieSecure on)
+#
+set http_only 1
+
+#
+# Here is the actual heavy lifting...  values are placed into array named in first argument (atbuf)
+#
+::auth_tkt::get_tkt_to_array atbuf -ip $ip -user username -tokenlist $tokenlist -key $key
+
+# Product of get_tkt_to_array is stored in the atbuf specified in the call.  Uncomment the parray to debug.
+# parray atbuf
+
+#
+# Now let's set the cookie for the user
+cookie set auth_tkt $atbuf(cookie) -domain example.com -path "/" -secure ${http_only}
+
+#
+# If we were provided a callback URL, let's go there now:
+#
+if {[info exists response(back)]} {
+	headers set "Location" $response(back)
+}
+
+?>
