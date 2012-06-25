@@ -43,7 +43,7 @@
 #define FORCE_REFRESH 1
 #define CHECK_REFRESH 0
 
-#define TKT_AUTH_VERSION "2.1.0"
+#define TKT_AUTH_VERSION "2.1.0s"
 
 /* ----------------------------------------------------------------------- */
 /* Per-directory configuration */
