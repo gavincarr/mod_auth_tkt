@@ -6,6 +6,7 @@
 #include "http_config.h"
 #include "http_log.h"
 #include "http_core.h"
+#include "http_request.h"
 #include "http_protocol.h"
 #include "util_md5.h"
 #include "sha2.h"
@@ -43,7 +44,7 @@
 #define FORCE_REFRESH 1
 #define CHECK_REFRESH 0
 
-#define TKT_AUTH_VERSION "2.1.0"
+#define TKT_AUTH_VERSION "2.1.0s"
 
 /* ----------------------------------------------------------------------- */
 /* Per-directory configuration */
@@ -68,6 +69,7 @@ typedef struct  {
   int guest_cookie;
   char *guest_user;
   int guest_fallback;
+  int guest_empty;
   int debug;
   const char *query_separator;
 } auth_tkt_dir_conf;
@@ -143,8 +145,9 @@ create_auth_tkt_config(apr_pool_t *p, char* path)
   conf->guest_cookie = -1;
   conf->guest_user = NULL;
   conf->guest_fallback = -1;
+  conf->guest_empty = -1;
   conf->debug = -1;
-  conf->query_separator = (char *)QUERY_SEPARATOR;
+  conf->query_separator = NULL;
   return conf;
 }
 
@@ -176,6 +179,7 @@ merge_auth_tkt_config(apr_pool_t *p, void* parent_dirv, void* subdirv)
   conf->guest_cookie = (subdir->guest_cookie >= 0) ? subdir->guest_cookie : parent->guest_cookie;
   conf->guest_user = (subdir->guest_user) ? subdir->guest_user : parent->guest_user;
   conf->guest_fallback = (subdir->guest_fallback >= 0) ?  subdir->guest_fallback : parent->guest_fallback;
+  conf->guest_empty = (subdir->guest_empty >= 0) ?  subdir->guest_empty : parent->guest_empty;
   conf->debug = (subdir->debug >= 0) ? subdir->debug : parent->debug;
   conf->query_separator = (subdir->query_separator) ? subdir->query_separator : parent->query_separator;
 
@@ -494,6 +498,9 @@ static const command_rec auth_tkt_cmds[] =
   AP_INIT_FLAG("TKTAuthGuestFallback", ap_set_flag_slot,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_fallback),
     OR_AUTHCFG, "whether to fall back to guest on an expired ticket (default: off)"),
+  AP_INIT_FLAG("TKTAuthGuestEmpty", ap_set_flag_slot,
+    (void *)APR_OFFSETOF(auth_tkt_dir_conf, guest_empty),
+    OR_AUTHCFG, "whether to use username of '' for guests (default: off)"),
   AP_INIT_ITERATE("TKTAuthDebug", set_auth_tkt_debug,
     (void *)APR_OFFSETOF(auth_tkt_dir_conf, debug),
     OR_AUTHCFG, "debug level (1-3, higher for more debug output)"),
@@ -1274,7 +1281,10 @@ redirect(request_rec *r, char *location)
 
   /* If back_cookie_name not set, add a back url argument to url */
   else if (back_arg_name) {
-    char sep = ap_strchr(location, '?') ? conf->query_separator[0] : '?';
+    char sep = '?';
+    if (ap_strchr(location, sep))
+      sep = conf->query_separator ? conf->query_separator[0]
+        : QUERY_SEPARATOR;
     url = apr_psprintf(r->pool, "%s%c%s=%s",
       location, sep, back_arg_name, back);
   }
@@ -1307,6 +1317,10 @@ get_guest_uid(request_rec *r, auth_tkt_dir_conf *conf)
   int uuid_length = -1;
   char *uuid_pre, *uuid_post;
 #endif
+
+  /* if guest_empty, uid is just "" */
+  if(conf->guest_empty > 0)
+    return "";
 
   /* no guest user specified via config, use the default */
   if (! conf->guest_user) {
@@ -1416,7 +1430,8 @@ dump_config(request_rec *r, auth_tkt_serv_conf *sconf, auth_tkt_dir_conf *conf)
   fprintf(stderr,"TKTAuthGuestCookie: %d\n",            conf->guest_cookie);
   fprintf(stderr,"TKTAuthGuestUser: %s\n",              conf->guest_user);
   fprintf(stderr,"TKTAuthGuestFallback %d\n",           conf->guest_fallback);
-  fprintf(stderr,"TKTAuthQuerySeparator: %c\n",         conf->query_separator);
+  fprintf(stderr,"TKTAuthGuestEmpty %d\n",              conf->guest_empty);
+  fprintf(stderr,"TKTAuthQuerySeparator: %s\n",         conf->query_separator);
   if (conf->auth_token->nelts > 0) {
     char ** auth_token = (char **) conf->auth_token->elts;
     int i;

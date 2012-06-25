@@ -161,6 +161,16 @@ TKTAuthGuestLogin on, of course.
 
 Default: off.
 
+=item TKTAuthGuestEmpty <boolean>
+
+Flag to indicate that the guest username should be an empty
+string.  Useful for allowing applications to fallback to native
+authentication when REMOTE_USER is empty (NOTE: REMOTE_USER must
+exist to satisfy Require valid-user, but will be empty).  Only makes
+sense with TKTAuthGuestLogin on, of course.
+
+Default: off.
+
 =item TKTAuthTimeout <seconds>
 
 The ticket timeout period, in seconds. After this period, the ticket
