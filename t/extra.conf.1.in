@@ -68,6 +68,16 @@ TKTAuthDigestType "MD5"
   TKTAuthGuestLogin on
 </Location>
 
+# secret_guest_empty - empty guest testing (uses a CGI)
+<Location /secret_guest_empty>
+  AddHandler cgi-script .cgi
+  Options +ExecCGI
+  AuthType None
+  require valid-user
+  TKTAuthGuestLogin on
+  TKTAuthGuestEmpty on
+</Location>
+
 # secret_guest_user - guest user testing (uses a CGI)
 <Location /secret_guest_user>
   AddHandler cgi-script .cgi
