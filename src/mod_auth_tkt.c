@@ -6,6 +6,7 @@
 #include "http_config.h"
 #include "http_log.h"
 #include "http_core.h"
+#include "http_request.h"
 #include "http_protocol.h"
 #include "util_md5.h"
 #include "sha2.h"
@@ -144,7 +145,7 @@ create_auth_tkt_config(apr_pool_t *p, char* path)
   conf->guest_user = NULL;
   conf->guest_fallback = -1;
   conf->debug = -1;
-  conf->query_separator = (char *)QUERY_SEPARATOR;
+  conf->query_separator = NULL;
   return conf;
 }
 
@@ -1274,7 +1275,10 @@ redirect(request_rec *r, char *location)
 
   /* If back_cookie_name not set, add a back url argument to url */
   else if (back_arg_name) {
-    char sep = ap_strchr(location, '?') ? conf->query_separator[0] : '?';
+    char sep = '?';
+    if (ap_strchr(location, sep))
+      sep = conf->query_separator ? conf->query_separator[0]
+        : QUERY_SEPARATOR;
     url = apr_psprintf(r->pool, "%s%c%s=%s",
       location, sep, back_arg_name, back);
   }
@@ -1416,7 +1420,7 @@ dump_config(request_rec *r, auth_tkt_serv_conf *sconf, auth_tkt_dir_conf *conf)
   fprintf(stderr,"TKTAuthGuestCookie: %d\n",            conf->guest_cookie);
   fprintf(stderr,"TKTAuthGuestUser: %s\n",              conf->guest_user);
   fprintf(stderr,"TKTAuthGuestFallback %d\n",           conf->guest_fallback);
-  fprintf(stderr,"TKTAuthQuerySeparator: %c\n",         conf->query_separator);
+  fprintf(stderr,"TKTAuthQuerySeparator: %s\n",         conf->query_separator);
   if (conf->auth_token->nelts > 0) {
     char ** auth_token = (char **) conf->auth_token->elts;
     int i;
