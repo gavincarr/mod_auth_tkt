@@ -101,7 +101,14 @@ function getTKTHash( $ip, $user, $tokens, $data, $key, $base64 = false, $ts = ""
     if( $ts == "" ) {
         $ts = time();
     }
-    $ipts = pack( "NN", ip2long($ip), $ts );
+    //ip2long returns FALSE on an IPv6 address
+    $ip_long = ip2long($ip);
+    if ( $ip_long !== FALSE)
+    {
+        $ipts = pack( "NN", $ip_long, $ts );
+    } else {
+        $ipts = inet_pton($ip) . pack( "N", $ts );       
+    }
 
     // make the cookie signature
     $digest0 = md5( $ipts . $key . $user . "\0" . $tokens . "\0" . $data );

@@ -811,20 +811,67 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
   char *user_data = parsed->user_data;
 
   unsigned char *buf = apr_palloc(r->pool,
-    TSTAMP_SZ + strlen(secret) + strlen(uid) + 1 + strlen(tokens) + 1 + strlen(user_data) + 1);
+    TSTAMP_SZ + 16 + strlen(secret) + strlen(uid) + 1 + strlen(tokens) + 1 + strlen(user_data) + 1);
   unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
   char *digest = NULL;
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
   unsigned long ip;
-  struct in_addr ia;
   char *d;
+  /*ia stores IPv4 addresses iv af is AF_INET.  If the address is IPv6 (AF_INET6), ia6 will be used.*/
+  int af = AF_INET;
+  struct in_addr ia;
+  #if APR_HAVE_IPV6
+  if( r->connection->remote_addr->family == APR_INET6 && !IN6_IS_ADDR_V4MAPPED(&r->connection->remote_addr->sa.sin6.sin6_addr))
+  {
+    if (conf->debug >= 2) {
+      ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r,
+        "System is IPv6 aware, apache address family is APR_INET6");
+    }
+    af = AF_INET6;
+  }
+  struct in6_addr ia6;
+  #endif
+  /*If ignore_ip is on, treat it as IPv4*/
+  if( conf->ignore_ip > 0 )
+  {
+    af = AF_INET;
+  }
 
-  /* Convert remote_ip to unsigned long */
+  /* Convert remote_ip to unsigned long if IPv4.  Otherwise, parse IPv6 into binary */
+  #if APR_HAVE_IPV6
+  if( af == AF_INET )
+  {
+    if (conf->debug >= 2) {
+      ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r,
+        "System is IPv6 aware, using an IPv4 address");
+    }
+    if (inet_pton(af, remote_ip, &ia) == 0) {
+      return (NULL);
+    }
+  } else {
+    if (conf->debug >= 2) {
+      ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r,
+        "System is IPv6 aware, using an IPv6 address");
+    }
+    if (inet_pton(af, remote_ip, &ia6) == 0) {
+      return (NULL);
+    }
+  }
+  #else
   if (inet_aton(remote_ip, &ia) == 0) {
     return (NULL);
   }
-  ip = ntohl(ia.s_addr);
+  #endif
+
+  /* IPv6 doesn't have a host byte order, everything is network byte order when in binary per the RFC.  */
+  if ( af == AF_INET )
+  {
+    ip = ntohl(ia.s_addr);
+  } else {
+    /*IPv6 address is appended after TS later from the ia6 object*/
+    ip = 0;
+  }
 
   if (timestamp == 0) timestamp = parsed->timestamp;
 
@@ -835,18 +882,32 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
 
   /* Fatals */
   if (buf == NULL) return (NULL);
-  if (ip == APR_INADDR_NONE) return (NULL);
+  if (ip == APR_INADDR_NONE && af == AF_INET) return (NULL);
 
-  /* First 8 bytes for ip address + timestamp */
-  buf[0] = (unsigned char ) ((ip & 0xff000000) >> 24);
-  buf[1] = (unsigned char ) ((ip & 0xff0000) >> 16);
-  buf[2] = (unsigned char ) ((ip & 0xff00) >> 8);
-  buf[3] = (unsigned char ) ((ip & 0xff));
-  buf[4] = (unsigned char ) ((timestamp    & 0xff000000) >> 24);
-  buf[5] = (unsigned char ) ((timestamp    & 0xff0000) >> 16);
-  buf[6] = (unsigned char ) ((timestamp    & 0xff00) >> 8);
-  buf[7] = (unsigned char ) ((timestamp    & 0xff));
-  len = 8;
+  /*Prepare the hash buffer with the IPv4 or IPv6 address and the timestamp*/
+  #if APR_HAVE_IPV6
+  if ( af == AF_INET )
+  {
+    buf[len++] = (unsigned char ) ((ip & 0xff000000) >> 24);
+    buf[len++] = (unsigned char ) ((ip & 0xff0000) >> 16);
+    buf[len++] = (unsigned char ) ((ip & 0xff00) >> 8);
+    buf[len++] = (unsigned char ) ((ip & 0xff));
+  } else {
+    /*Append the binary IPv6 address to the buffer.  strcpy will incorrectly handle null bytes.*/
+    memcpy((char *)&buf[len], (char *)&ia6.s6_addr, 16);
+    len += 16;
+  }
+  #else
+  buf[len++] = (unsigned char ) ((ip & 0xff000000) >> 24);
+  buf[len++] = (unsigned char ) ((ip & 0xff0000) >> 16);
+  buf[len++] = (unsigned char ) ((ip & 0xff00) >> 8);
+  buf[len++] = (unsigned char ) ((ip & 0xff));
+  #endif
+  /*At this point len will be 4 for IPv4 or 16 for IPv6*/
+  buf[len++] = (unsigned char ) ((timestamp    & 0xff000000) >> 24);
+  buf[len++] = (unsigned char ) ((timestamp    & 0xff0000) >> 16);
+  buf[len++] = (unsigned char ) ((timestamp    & 0xff00) >> 8);
+  buf[len++] = (unsigned char ) ((timestamp    & 0xff));
 
   /* Append remaining components to buf */
   strcpy((char *)&buf[len], secret);
