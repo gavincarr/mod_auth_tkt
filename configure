@@ -69,7 +69,8 @@ fi
 test $VERSION = '2.0' && VERSION=2
 test $VERSION = '20'  && VERSION=2
 test $VERSION = '22'  && VERSION=2.2
-if [ $VERSION != '1' -a $VERSION != '2' -a $VERSION != '2.2' ]; then
+test $VERSION = '24'  && VERSION=2.4
+if [ $VERSION != '1' -a $VERSION != '2' -a $VERSION != '2.2' -a $VERSION != '2.4' ]; then
   die "Error: apache version '$VERSION' not supported"
 fi
 
