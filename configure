@@ -93,6 +93,9 @@ else
   if [ $VERSION = "2.2" ]; then
     echo "CFLAGS += -DAPACHE22" >> Makedefs
   fi
+  if [ $VERSION = "2.4" ]; then
+    echo "CFLAGS += -DAPACHE24" >> Makedefs
+  fi
   echo "TARGET = mod_auth_tkt.la" >> Makedefs
 fi
 echo "BASEDIR = $DIR" >> Makedefs
