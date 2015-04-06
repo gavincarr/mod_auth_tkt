@@ -990,8 +990,8 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed,
 
 #ifdef APACHE24
 /* Fake the basic authentication header for consumption by applications */
-static void 
-fake_basic_authentication(request_rec *r, 
+static void
+fake_basic_authentication(request_rec *r,
 			  const char *user, const char *pw)
 {
   char *basic = apr_pstrcat(r->pool, user, ":", pw, NULL);
@@ -1054,7 +1054,7 @@ check_tokens(request_rec *r, char *tokens)
 
 #ifdef APACHE24
 /* Implement the Apache 2.4 authz provider 'check_authorization' function */
-static authz_status 
+static authz_status
 tkt_check_authorization(request_rec *r,
 			const char *require_args,
 			const void *parsed_require_args)
@@ -1062,7 +1062,7 @@ tkt_check_authorization(request_rec *r,
   const char *user = r->user;
   const char *tokens = apr_table_get(r->subprocess_env, REMOTE_USER_TOKENS_ENV);
   ap_log_rerror(APLOG_MARK, APLOG_TRACE2, APR_SUCCESS, r, APLOGNO(00000)
-    "TKT tkt_check_authorization: require_args=%s, user=%s, tokens=%s", 
+    "TKT tkt_check_authorization: require_args=%s, user=%s, tokens=%s",
     require_args, user, tokens);
 
   /* We need a parsed ticket, force Apache to get it */
@@ -1097,7 +1097,7 @@ tkt_check_authorization(request_rec *r,
                   r->user, r->uri, require_args, tokens);
     return AUTHZ_DENIED;
   }
-  
+
   return AUTHZ_GRANTED;
 }
 
@@ -1652,7 +1652,7 @@ auth_tkt_check(request_rec *r)
   apr_table_set(r->subprocess_env, REMOTE_USER_TOKENS_ENV, parsed->tokens);
 
 #ifdef APACHE24
-  fake_basic_authentication(r, (char*)parsed->uid, "password");  
+  fake_basic_authentication(r, (char*)parsed->uid, "password");
 #endif
 
   return OK;
@@ -1705,7 +1705,7 @@ auth_tkt_register_hooks (apr_pool_t *p)
   ap_register_auth_provider(p, AUTHZ_PROVIDER_GROUP, "tkt-group",
                             AUTHZ_PROVIDER_VERSION,
                             &authz_tkt_provider,
-                            AP_AUTH_INTERNAL_PER_CONF);  
+                            AP_AUTH_INTERNAL_PER_CONF);
 #endif
 }
 
