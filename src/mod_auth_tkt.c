@@ -988,6 +988,22 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed,
   return 1;
 }
 
+#ifdef APACHE24
+/* Fake the basic authentication header for consumption by applications */
+static void 
+fake_basic_authentication(request_rec *r, 
+			  const char *user, const char *pw)
+{
+  char *basic = apr_pstrcat(r->pool, user, ":", pw, NULL);
+  apr_size_t size = (apr_size_t) strlen(basic);
+  char *base64 = apr_palloc(r->pool,
+			    apr_base64_encode_len(size + 1) * sizeof(char));
+  apr_base64_encode(base64, basic, size);
+  apr_table_setn(r->headers_in, "Authorization",
+		 apr_pstrcat(r->pool, "Basic ", base64, NULL));
+}
+#endif
+
 /* Check for required auth tokens
  * Returns 1 on success, 0 on failure */
 static int
@@ -1035,6 +1051,64 @@ check_tokens(request_rec *r, char *tokens)
 
   return match;
 }
+
+#ifdef APACHE24
+/* Implement the Apache 2.4 authz provider 'check_authorization' function */
+static authz_status 
+tkt_check_authorization(request_rec *r,
+			const char *require_args,
+			const void *parsed_require_args)
+{
+  const char *user = r->user;
+  const char *tokens = apr_table_get(r->subprocess_env, REMOTE_USER_TOKENS_ENV);
+  ap_log_rerror(APLOG_MARK, APLOG_TRACE2, APR_SUCCESS, r, APLOGNO(00000)
+    "TKT tkt_check_authorization: require_args=%s, user=%s, tokens=%s", 
+    require_args, user, tokens);
+
+  /* We need a parsed ticket, force Apache to get it */
+  if (!user) {
+    return AUTHZ_DENIED_NO_USER;
+  }
+
+  /* Prepare lookup table from comma-separated list of tokens */
+  apr_table_t *token_table = (apr_table_t*)apr_table_make(r->pool, 5);
+  const char *t = tokens;
+  char *token;
+  while (*t && (token = ap_getword(r->pool, &t, ','))) {
+    apr_table_setn(token_table, token, "x");
+  }
+
+  /* Check if at least one group is matched by a token (case insensitive) */
+  const char *g = require_args;
+  char *group;
+  int match = 0;
+  while (*g && (group = ap_getword(r->pool, &g, ' '))) {
+    if (apr_table_get(token_table, group)) {
+      match = 1;
+      break;
+    }
+  }
+
+  if (!match) {
+    ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(00000)
+                  "Authorization of user %s to access %s failed, reason: "
+                  "ticket has no token that matches one of the 'require'ed "
+                  "group(s): %s; tokens=%s",
+                  r->user, r->uri, require_args, tokens);
+    return AUTHZ_DENIED;
+  }
+  
+  return AUTHZ_GRANTED;
+}
+
+/* Declare the Apache 2.4 authz provider callbacks */
+static const authz_provider authz_tkt_provider =
+{
+  &tkt_check_authorization,     /* check_authorization */
+  NULL,                         /* parse_require_line */
+};
+#endif
+
 
 /* Refresh the auth cookie if timeout refresh is set */
 static void
@@ -1577,6 +1651,10 @@ auth_tkt_check(request_rec *r)
   apr_table_set(r->subprocess_env, REMOTE_USER_DATA_ENV,   parsed->user_data);
   apr_table_set(r->subprocess_env, REMOTE_USER_TOKENS_ENV, parsed->tokens);
 
+#ifdef APACHE24
+  fake_basic_authentication(r, (char*)parsed->uid, "password");  
+#endif
+
   return OK;
 }
 
@@ -1603,13 +1681,13 @@ module MODULE_VAR_EXPORT auth_tkt_module = {
   NULL,                         /* fixups */
   NULL,                         /* logger */
   NULL,                         /* header parser */
-  NULL,                         /* chitkt_init */
-  NULL,                         /* chitkt_exit */
+  NULL,                         /* child_init */
+  NULL,                         /* child_exit */
   NULL                          /* post read-request */
 };
 
 #else
-/* Apache 2.0 style */
+/* Apache 2.x style */
 
 /* Register hooks */
 static void
@@ -1622,7 +1700,12 @@ auth_tkt_register_hooks (apr_pool_t *p)
   /* http://httpd.apache.org/docs/2.4/developer/new_api_2_4.html */
   /* http://ci.apache.org/projects/httpd/trunk/doxygen/ */
   ap_hook_check_authn(auth_tkt_check, NULL, NULL, APR_HOOK_FIRST, AP_AUTH_INTERNAL_PER_CONF);
-  
+  /* Register ourselves as authz provider   */
+  /*    Require tkt-group group1 group2 ... */
+  ap_register_auth_provider(p, AUTHZ_PROVIDER_GROUP, "tkt-group",
+                            AUTHZ_PROVIDER_VERSION,
+                            &authz_tkt_provider,
+                            AP_AUTH_INTERNAL_PER_CONF);  
 #endif
 }
 
