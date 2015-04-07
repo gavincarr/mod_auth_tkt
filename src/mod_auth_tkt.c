@@ -273,11 +273,10 @@ set_auth_tkt_token (cmd_parms *cmd, void *cfg, const char *param)
   auth_tkt_dir_conf *conf = (auth_tkt_dir_conf *) cfg;
 
 #ifdef APACHE24
-  ap_log_error(APLOG_MARK, APLOG_WARNING, 0, cmd->server,
-  "As of Apache 2.4, TKTAuthToken is deprecated in favor "
-  "of the more versatile standard directive "
-  "'Require tkt-group group1 group2 ...' "
-  "(see README.Apache_2.4 for more information).");
+  ap_log_error(APLOG_MARK, APLOG_INFO, 0, cmd->server,
+  "With Apache 2.4, 'Require tkt-group group1 group2 ...' "
+  "is a more versatile alternative to TKTAuthToken (see "
+  "README.Apache_2.4 or the manpage for more information).");
 #endif
 
   new = (char **) apr_array_push(conf->auth_token);
@@ -1396,10 +1395,15 @@ get_guest_uid(request_rec *r, auth_tkt_dir_conf *conf)
   int guest_user_length;
   apr_uuid_t *uuid;
   char *uuid_str, *uuid_length_str;
-#ifndef APACHE22
+#ifdef APACHE20
   regex_t *uuid_regex;
   regmatch_t regm[UUID_SUBS];
-#else
+#endif
+#ifdef APACHE22
+  ap_regex_t *uuid_regex;
+  ap_regmatch_t regm[UUID_SUBS];
+#endif
+#ifdef APACHE24
   ap_regex_t *uuid_regex;
   ap_regmatch_t regm[UUID_SUBS];
 #endif
