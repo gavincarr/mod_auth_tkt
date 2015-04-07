@@ -272,6 +272,14 @@ set_auth_tkt_token (cmd_parms *cmd, void *cfg, const char *param)
   char **new;
   auth_tkt_dir_conf *conf = (auth_tkt_dir_conf *) cfg;
 
+#ifdef APACHE24
+  ap_log_error(APLOG_MARK, APLOG_WARNING, 0, cmd->server,
+  "As of Apache 2.4, TKTAuthToken is deprecated in favor "
+  "of the more versatile standard directive "
+  "'Require tkt-group group1 group2 ...' "
+  "(see README.Apache_2.4 for more information).");
+#endif
+
   new = (char **) apr_array_push(conf->auth_token);
   *new = apr_pstrdup(cmd->pool, param);
   return NULL;
@@ -537,7 +545,7 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
 
   /* See if there is a uid/data separator */
   sepidx = ap_ind(ticket, SEPARATOR);
-  if (sepidx == -1) {    
+  if (sepidx == -1) {
     /* Ticket either uri-escaped, base64-escaped, or bogus */
     if (strstr(ticket, SEPARATOR_HEX)) {
       ap_unescape_url(ticket);
@@ -1061,9 +1069,13 @@ tkt_check_authorization(request_rec *r,
 {
   const char *user = r->user;
   const char *tokens = apr_table_get(r->subprocess_env, REMOTE_USER_TOKENS_ENV);
-  ap_log_rerror(APLOG_MARK, APLOG_TRACE2, APR_SUCCESS, r, APLOGNO(00000)
-    "TKT tkt_check_authorization: require_args=%s, user=%s, tokens=%s",
-    require_args, user, tokens);
+  auth_tkt_dir_conf *conf =
+    ap_get_module_config(r->per_dir_config, &auth_tkt_module);
+  if (conf->debug >= 2) {
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r,
+      "TKT tkt_check_authorization: require_args=%s, user=%s, tokens=%s",
+      require_args, user, tokens);
+  }
 
   /* We need a parsed ticket, force Apache to get it */
   if (!user) {
@@ -1090,7 +1102,7 @@ tkt_check_authorization(request_rec *r,
   }
 
   if (!match) {
-    ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(00000)
+    ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r,
                   "Authorization of user %s to access %s failed, reason: "
                   "ticket has no token that matches one of the 'require'ed "
                   "group(s): %s; tokens=%s",

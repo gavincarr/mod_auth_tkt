@@ -1,0 +1,45 @@
+Upgrading to Apache 2.4
+-----------------------
+
+Starting with version 2.2.0, mod_auth_tkt supports Apache 2.4
+taking advantage of the new "provider" model for authentication/
+authorization.
+
+In particular, mod_auth_tkt now acts as an authorization provider
+and allows you to use the much more versatile 'Require' directive
+instead of TKTAuthToken:
+
+  Require tkt-group token1 token2 ...
+
+Note that the "entity-name" needs to be 'tkt-group' and not
+just 'group' to direct the check to mod_auth_tkt (this also
+applies for similar modules, e.g. mod_auth_dbm -> dbm-group
+and is *not* documented in the Apache 2.4 doc).
+
+The remainder of the directive is a list of one or more tokens
+of which at least one must be present in the ticket for a user
+to be granted access to the resource.
+
+Using the standard 'Require' directive together with the new
+<RequireAny/All> sections allows to build arbitrarily complex
+access control expressions.
+
+Example config:
+
+   TKTAuthSecret       "my shared secret"
+   <Location "/">
+      TKTAuthLoginURL  https://sso.some.where/login
+      TKTAuthDomain    .some.where
+      #
+      Order            allow,deny
+      Allow            from all
+      Require          all granted
+   </Location>
+
+   <Location "/jackpot">
+      Require         tkt-group  gamblers taxpayers
+   </Location>
+
+Note that there are no AuthBasic* directives anywhere.
+On authorization failure, the session is immediately
+redirected to the error page.
