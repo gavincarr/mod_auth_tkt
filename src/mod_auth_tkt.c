@@ -12,17 +12,25 @@
 
 #ifdef APACHE13
 #include "ap_compat.h"
-#else
+#else /* Apache 2.x */
 #define UUID_SUBS 2
 #include "apr_lib.h"
 #include "apr_strings.h"
 #include "apr_uuid.h"
 #include "apr_base64.h"
-#ifndef APACHE22
+#ifdef APACHE20
 #include "pcreposix.h"
-#else
+#endif
+#ifdef APACHE22
 #include "ap22_compat.h"
 #include "ap_regex.h"
+#endif
+#ifdef APACHE24
+#include "ap22_compat.h"
+#include "ap_regex.h"
+#include "http_request.h"
+#include "ap_provider.h"
+#include "mod_auth.h"
 #endif
 #endif
 
@@ -38,12 +46,13 @@
 #define REMOTE_USER_TOKENS_ENV "REMOTE_USER_TOKENS"
 #define DEFAULT_TIMEOUT_SEC 7200
 #define DEFAULT_GUEST_USER "guest"
-#define QUERY_SEPARATOR ';'
+#define QUERY_SEPARATOR ";"
 
 #define FORCE_REFRESH 1
 #define CHECK_REFRESH 0
 
-#define TKT_AUTH_VERSION "2.1.0"
+#define TKT_AUTH_VERSION "2.2.0"
+
 
 /* ----------------------------------------------------------------------- */
 /* Per-directory configuration */
@@ -144,7 +153,7 @@ create_auth_tkt_config(apr_pool_t *p, char* path)
   conf->guest_user = NULL;
   conf->guest_fallback = -1;
   conf->debug = -1;
-  conf->query_separator = (char *)QUERY_SEPARATOR;
+  conf->query_separator = QUERY_SEPARATOR;
   return conf;
 }
 
@@ -262,6 +271,14 @@ set_auth_tkt_token (cmd_parms *cmd, void *cfg, const char *param)
 {
   char **new;
   auth_tkt_dir_conf *conf = (auth_tkt_dir_conf *) cfg;
+
+#ifdef APACHE24
+  ap_log_error(APLOG_MARK, APLOG_WARNING, 0, cmd->server,
+  "As of Apache 2.4, TKTAuthToken is deprecated in favor "
+  "of the more versatile standard directive "
+  "'Require tkt-group group1 group2 ...' "
+  "(see README.Apache_2.4 for more information).");
+#endif
 
   new = (char **) apr_array_push(conf->auth_token);
   *new = apr_pstrdup(cmd->pool, param);
@@ -528,7 +545,7 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
 
   /* See if there is a uid/data separator */
   sepidx = ap_ind(ticket, SEPARATOR);
-  if (sepidx == -1) {    
+  if (sepidx == -1) {
     /* Ticket either uri-escaped, base64-escaped, or bogus */
     if (strstr(ticket, SEPARATOR_HEX)) {
       ap_unescape_url(ticket);
@@ -815,7 +832,11 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
   unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
   char *digest = NULL;
+#ifndef APACHE24
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
+#else
+  char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->useragent_ip;
+#endif
   unsigned long ip;
   struct in_addr ia;
   char *d;
@@ -975,6 +996,22 @@ valid_ticket(request_rec *r, const char *source, char *ticket, auth_tkt *parsed,
   return 1;
 }
 
+#ifdef APACHE24
+/* Fake the basic authentication header for consumption by applications */
+static void
+fake_basic_authentication(request_rec *r,
+			  const char *user, const char *pw)
+{
+  char *basic = apr_pstrcat(r->pool, user, ":", pw, NULL);
+  apr_size_t size = (apr_size_t) strlen(basic);
+  char *base64 = apr_palloc(r->pool,
+			    apr_base64_encode_len(size + 1) * sizeof(char));
+  apr_base64_encode(base64, basic, size);
+  apr_table_setn(r->headers_in, "Authorization",
+		 apr_pstrcat(r->pool, "Basic ", base64, NULL));
+}
+#endif
+
 /* Check for required auth tokens
  * Returns 1 on success, 0 on failure */
 static int
@@ -1008,8 +1045,8 @@ check_tokens(request_rec *r, char *tokens)
       int token_len = strlen(auth_tokens[i]);
       if (strncmp(auth_tokens[i], next_parsed_token, token_len) == 0 &&
       next_parsed_token[token_len] == 0) {
-    match = 1;
-    break;
+        match = 1;
+        break;
       }
     }
     if (match) break;
@@ -1022,6 +1059,68 @@ check_tokens(request_rec *r, char *tokens)
 
   return match;
 }
+
+#ifdef APACHE24
+/* Implement the Apache 2.4 authz provider 'check_authorization' function */
+static authz_status
+tkt_check_authorization(request_rec *r,
+			const char *require_args,
+			const void *parsed_require_args)
+{
+  const char *user = r->user;
+  const char *tokens = apr_table_get(r->subprocess_env, REMOTE_USER_TOKENS_ENV);
+  auth_tkt_dir_conf *conf =
+    ap_get_module_config(r->per_dir_config, &auth_tkt_module);
+  if (conf->debug >= 2) {
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, r,
+      "TKT tkt_check_authorization: require_args=%s, user=%s, tokens=%s",
+      require_args, user, tokens);
+  }
+
+  /* We need a parsed ticket, force Apache to get it */
+  if (!user) {
+    return AUTHZ_DENIED_NO_USER;
+  }
+
+  /* Prepare lookup table from comma-separated list of tokens */
+  apr_table_t *token_table = (apr_table_t*)apr_table_make(r->pool, 5);
+  const char *t = tokens;
+  char *token;
+  while (*t && (token = ap_getword(r->pool, &t, ','))) {
+    apr_table_setn(token_table, token, "x");
+  }
+
+  /* Check if at least one group is matched by a token (case insensitive) */
+  const char *g = require_args;
+  char *group;
+  int match = 0;
+  while (*g && (group = ap_getword(r->pool, &g, ' '))) {
+    if (apr_table_get(token_table, group)) {
+      match = 1;
+      break;
+    }
+  }
+
+  if (!match) {
+    ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r,
+                  "Authorization of user %s to access %s failed, reason: "
+                  "ticket has no token that matches one of the 'require'ed "
+                  "group(s): %s; tokens=%s",
+                  r->user, r->uri, require_args, tokens);
+    return AUTHZ_DENIED;
+  }
+
+  return AUTHZ_GRANTED;
+}
+
+/* Declare the Apache 2.4 authz provider callbacks */
+static const authz_provider authz_tkt_provider =
+{
+  &tkt_check_authorization,     /* check_authorization */
+  NULL,                         /* parse_require_line */
+};
+#endif
+
 
 /* Refresh the auth cookie if timeout refresh is set */
 static void
@@ -1386,37 +1485,42 @@ setup_guest(request_rec *r, auth_tkt_dir_conf *conf, auth_tkt *tkt)
 
 /* ----------------------------------------------------------------------- */
 /* Debug routines */
+
+/* Protect against libc which dies on NULL strings */
+#define NN(x) ((x)?(x):"(null)")
+
 void
 dump_config(request_rec *r, auth_tkt_serv_conf *sconf, auth_tkt_dir_conf *conf)
 {
   /* Dump config settings */
-  fprintf(stderr,"[ mod_auth_tkt config ]\n");
+  fprintf(stderr,"[ mod_auth_tkt config (server) ]\n");
   fprintf(stderr,"URI: %s\n", r->uri);
-  fprintf(stderr,"Filename: %s\n",                      r->filename);
-  fprintf(stderr,"TKTAuthSecret: %s\n",                 sconf->secret);
-  fprintf(stderr,"TKTAuthSecretOld: %s\n",              sconf->old_secret);
-  fprintf(stderr,"TKTAuthDigestType: %s\n",             sconf->digest_type);
-  fprintf(stderr,"digest_sz: %d\n",                     sconf->digest_sz);
-  fprintf(stderr,"directory: %s\n",                     conf->directory);
-  fprintf(stderr,"TKTAuthLoginURL: %s\n",               conf->login_url);
-  fprintf(stderr,"TKTAuthTimeoutURL: %s\n",             conf->timeout_url);
-  fprintf(stderr,"TKTAuthPostTimeoutURL: %s\n",         conf->post_timeout_url);
-  fprintf(stderr,"TKTAuthUnauthURL: %s\n",              conf->unauth_url);
-  fprintf(stderr,"TKTAuthCookieName: %s\n",             conf->auth_cookie_name);
-  fprintf(stderr,"TKTAuthDomain: %s\n",                 conf->auth_domain);
-  fprintf(stderr,"TKTAuthCookieExpires: %d\n",          conf->cookie_expires);
-  fprintf(stderr,"TKTAuthBackCookieName: %s\n",         conf->back_cookie_name);
-  fprintf(stderr,"TKTAuthBackArgName: %s\n",            conf->back_arg_name);
-  fprintf(stderr,"TKTAuthIgnoreIP: %d\n",               conf->ignore_ip);
-  fprintf(stderr,"TKTAuthRequireSSL: %d\n",             conf->require_ssl);
-  fprintf(stderr,"TKTAuthCookieSecure: %d\n",           conf->secure_cookie);
-  fprintf(stderr,"TKTAuthTimeoutMin: %d\n",             conf->timeout_sec);
-  fprintf(stderr,"TKTAuthTimeoutRefresh: %f\n",         conf->timeout_refresh);
-  fprintf(stderr,"TKTAuthGuestLogin: %d\n",             conf->guest_login);
-  fprintf(stderr,"TKTAuthGuestCookie: %d\n",            conf->guest_cookie);
-  fprintf(stderr,"TKTAuthGuestUser: %s\n",              conf->guest_user);
-  fprintf(stderr,"TKTAuthGuestFallback %d\n",           conf->guest_fallback);
-  fprintf(stderr,"TKTAuthQuerySeparator: %c\n",         conf->query_separator);
+  fprintf(stderr,"TKTAuthSecret: %s\n",             NN(sconf->secret));
+  fprintf(stderr,"TKTAuthSecretOld: %s\n",          NN(sconf->old_secret));
+  fprintf(stderr,"TKTAuthDigestType: %s\n",         NN(sconf->digest_type));
+  fprintf(stderr,"digest_sz: %d\n",                 sconf->digest_sz);
+  fprintf(stderr,"[ mod_auth_tkt config (dir) ]\n");
+  fprintf(stderr,"Filename: %s\n",                  NN(r->filename));
+  fprintf(stderr,"Directory: %s\n",                 NN(conf->directory));
+  fprintf(stderr,"TKTAuthLoginURL: %s\n",           NN(conf->login_url));
+  fprintf(stderr,"TKTAuthTimeoutURL: %s\n",         NN(conf->timeout_url));
+  fprintf(stderr,"TKTAuthPostTimeoutURL: %s\n",     NN(conf->post_timeout_url));
+  fprintf(stderr,"TKTAuthUnauthURL: %s\n",          NN(conf->unauth_url));
+  fprintf(stderr,"TKTAuthCookieName: %s\n",         NN(conf->auth_cookie_name));
+  fprintf(stderr,"TKTAuthDomain: %s\n",             NN(conf->auth_domain));
+  fprintf(stderr,"TKTAuthCookieExpires: %d\n",      conf->cookie_expires);
+  fprintf(stderr,"TKTAuthBackCookieName: %s\n",     NN(conf->back_cookie_name));
+  fprintf(stderr,"TKTAuthBackArgName: %s\n",        NN(conf->back_arg_name));
+  fprintf(stderr,"TKTAuthIgnoreIP: %d\n",           conf->ignore_ip);
+  fprintf(stderr,"TKTAuthRequireSSL: %d\n",         conf->require_ssl);
+  fprintf(stderr,"TKTAuthCookieSecure: %d\n",       conf->secure_cookie);
+  fprintf(stderr,"TKTAuthTimeoutMin: %d\n",         conf->timeout_sec);
+  fprintf(stderr,"TKTAuthTimeoutRefresh: %f\n",     conf->timeout_refresh);
+  fprintf(stderr,"TKTAuthGuestLogin: %d\n",         conf->guest_login);
+  fprintf(stderr,"TKTAuthGuestCookie: %d\n",        conf->guest_cookie);
+  fprintf(stderr,"TKTAuthGuestUser: %s\n",          NN(conf->guest_user));
+  fprintf(stderr,"TKTAuthGuestFallback %d\n",       conf->guest_fallback);
+  fprintf(stderr,"TKTAuthQuerySeparator: %c\n",     conf->query_separator[0]);
   if (conf->auth_token->nelts > 0) {
     char ** auth_token = (char **) conf->auth_token->elts;
     int i;
@@ -1559,6 +1663,10 @@ auth_tkt_check(request_rec *r)
   apr_table_set(r->subprocess_env, REMOTE_USER_DATA_ENV,   parsed->user_data);
   apr_table_set(r->subprocess_env, REMOTE_USER_TOKENS_ENV, parsed->tokens);
 
+#ifdef APACHE24
+  fake_basic_authentication(r, (char*)parsed->uid, "password");
+#endif
+
   return OK;
 }
 
@@ -1585,20 +1693,32 @@ module MODULE_VAR_EXPORT auth_tkt_module = {
   NULL,                         /* fixups */
   NULL,                         /* logger */
   NULL,                         /* header parser */
-  NULL,                         /* chitkt_init */
-  NULL,                         /* chitkt_exit */
+  NULL,                         /* child_init */
+  NULL,                         /* child_exit */
   NULL                          /* post read-request */
 };
 
 #else
-/* Apache 2.0 style */
+/* Apache 2.x style */
 
 /* Register hooks */
 static void
 auth_tkt_register_hooks (apr_pool_t *p)
 {
   ap_hook_post_config(auth_tkt_version, NULL, NULL, APR_HOOK_MIDDLE);
+#ifndef APACHE24
   ap_hook_check_user_id(auth_tkt_check, NULL, NULL, APR_HOOK_FIRST);
+#else
+  /* http://httpd.apache.org/docs/2.4/developer/new_api_2_4.html */
+  /* http://ci.apache.org/projects/httpd/trunk/doxygen/ */
+  ap_hook_check_authn(auth_tkt_check, NULL, NULL, APR_HOOK_FIRST, AP_AUTH_INTERNAL_PER_CONF);
+  /* Register ourselves as authz provider   */
+  /*    Require tkt-group group1 group2 ... */
+  ap_register_auth_provider(p, AUTHZ_PROVIDER_GROUP, "tkt-group",
+                            AUTHZ_PROVIDER_VERSION,
+                            &authz_tkt_provider,
+                            AP_AUTH_INTERNAL_PER_CONF);
+#endif
 }
 
 /* Declare and populate the main module data structure */
