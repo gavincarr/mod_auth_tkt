@@ -50,7 +50,7 @@ test_sha512: $(MODULE)
 	./TEST
 
 test: $(MODULE) test_md5 test_sha256 test_sha512
-	
+
 clean:
 	./TEST -clean
 	rm -f conf/extra.conf.in
