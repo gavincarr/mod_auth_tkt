@@ -1,6 +1,12 @@
 Test Instructions
 =================
 
+Requirements:
+
+- Apache::TestRun, from the mod_perl project
+
+
+
 1. To run the test suite against the currently configured apache version:
 
    make test
