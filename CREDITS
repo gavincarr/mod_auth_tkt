@@ -1,4 +1,22 @@
 
+Peter Karman <peter@peknet.com>, Ivo De Decker <ivo.dedecker@ugent.be>
+(the debian maintainer), and Deitmar Berg <dietmar.berg@thalesgroup.com>
+all supplied patches to update mod_auth_tkt to work with apache 2.4.
+The 2.4 updates are based on their work.
+
+Bearnard Hibbins <bearnard@gmail.com> provided a cookie parsing fix for
+when badly behaved proxy/cache servers strip whitespace from headers.
+
+Scott Shambarger <devel@shambarger.net> added the TKTAuthGuestEmpty
+directive, allowing guest access to set REMOTE_USER to "", which allows
+some http-auth systems to fallback to another authenticator. He also
+updated TKTAuthQuerySeparator to be a string (allowing better inheritance,
+and fixed some minor compile/build issues.
+
+David McNett <nugget@flightaware.com> contributed example code for a
+back-end login written in Tcl (for use with Apache Rivet). Available in
+contrib/tcl.
+
 Christian Folini <christian.folini@time-machine.ch> and an anonymous Swiss
 bank sponsored the changes to include SHA256/SHA512 support, and to
 integrate and test Michael Peters' TKTAuthSecretOld functionality. Version
