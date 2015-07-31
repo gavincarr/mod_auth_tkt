@@ -19,11 +19,11 @@
 #include "apr_strings.h"
 #include "apr_uuid.h"
 #include "apr_base64.h"
-#ifndef APACHE22
-#include "pcreposix.h"
-#else
+#if AP_MODULE_MAGIC_AT_LEAST(20030213,1)
 #include "ap22_compat.h"
 #include "ap_regex.h"
+#else
+#include "pcreposix.h"
 #endif
 #endif
 
@@ -1319,12 +1319,12 @@ get_guest_uid(request_rec *r, auth_tkt_dir_conf *conf)
   int guest_user_length;
   apr_uuid_t *uuid;
   char *uuid_str, *uuid_length_str;
-#ifndef APACHE22
-  regex_t *uuid_regex;
-  regmatch_t regm[UUID_SUBS];
-#else
+#if AP_MODULE_MAGIC_AT_LEAST(20030213,1)
   ap_regex_t *uuid_regex;
   ap_regmatch_t regm[UUID_SUBS];
+#else
+  regex_t *uuid_regex;
+  regmatch_t regm[UUID_SUBS];
 #endif
   int uuid_length = -1;
   char *uuid_pre, *uuid_post;
