@@ -822,7 +822,19 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
   unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
   char *digest = NULL;
+#if AP_MODULE_MAGIC_AT_LEAST(20111130,0)
+  /* Apache 2.4 removed conn->remote_ip, replacing it with:
+   * - request_rec->useragent_ip - the ip address of the remote user agent, either directly
+   *     or via a transparent proxy or load balancer
+   * - conn_rec->client_ip - the client directly connected to the server, which might be the
+   *     user agent or a load balancer / proxy
+   * So we want useragent_ip here, assuming it can be trusted.
+   * See http://httpd.apache.org/docs/2.4/developer/new_api_2_4.html
+   */
+  char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->useragent_ip;
+#else
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
+#endif
   unsigned long ip;
   struct in_addr ia;
   char *d;
