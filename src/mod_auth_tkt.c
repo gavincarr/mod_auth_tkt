@@ -19,11 +19,11 @@
 #include "apr_strings.h"
 #include "apr_uuid.h"
 #include "apr_base64.h"
-#ifndef APACHE22
-#include "pcreposix.h"
-#else
+#if AP_MODULE_MAGIC_AT_LEAST(20030213,1)
 #include "ap22_compat.h"
 #include "ap_regex.h"
+#else
+#include "pcreposix.h"
 #endif
 #endif
 
@@ -822,7 +822,19 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
   unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
   char *digest = NULL;
+#if AP_MODULE_MAGIC_AT_LEAST(20111130,0)
+  /* Apache 2.4 removed conn->remote_ip, replacing it with:
+   * - request_rec->useragent_ip - the ip address of the remote user agent, either directly
+   *     or via a transparent proxy or load balancer
+   * - conn_rec->client_ip - the client directly connected to the server, which might be the
+   *     user agent or a load balancer / proxy
+   * So we want useragent_ip here, assuming it can be trusted.
+   * See http://httpd.apache.org/docs/2.4/developer/new_api_2_4.html
+   */
+  char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->useragent_ip;
+#else
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
+#endif
   unsigned long ip;
   struct in_addr ia;
   char *d;
@@ -1307,12 +1319,12 @@ get_guest_uid(request_rec *r, auth_tkt_dir_conf *conf)
   int guest_user_length;
   apr_uuid_t *uuid;
   char *uuid_str, *uuid_length_str;
-#ifndef APACHE22
-  regex_t *uuid_regex;
-  regmatch_t regm[UUID_SUBS];
-#else
+#if AP_MODULE_MAGIC_AT_LEAST(20030213,1)
   ap_regex_t *uuid_regex;
   ap_regmatch_t regm[UUID_SUBS];
+#else
+  regex_t *uuid_regex;
+  regmatch_t regm[UUID_SUBS];
 #endif
   int uuid_length = -1;
   char *uuid_pre, *uuid_post;
@@ -1613,7 +1625,11 @@ static void
 auth_tkt_register_hooks (apr_pool_t *p)
 {
   ap_hook_post_config(auth_tkt_version, NULL, NULL, APR_HOOK_MIDDLE);
+#if AP_MODULE_MAGIC_AT_LEAST(20080403,1)
+  ap_hook_check_authn(auth_tkt_check, NULL, NULL, APR_HOOK_FIRST, AP_AUTH_INTERNAL_PER_CONF);
+#else
   ap_hook_check_user_id(auth_tkt_check, NULL, NULL, APR_HOOK_FIRST);
+#endif
 }
 
 /* Declare and populate the main module data structure */
