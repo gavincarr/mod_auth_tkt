@@ -19,7 +19,7 @@ plan tests => 22, need_lwp;
 # Turn off automatic redirection following
 Apache::TestRequest::user_agent(
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 ok 1;   # simple load test
@@ -38,7 +38,7 @@ $jar->set_cookie(1, 'auth_tkt', $ticket, '/', '.localdomain');
 Apache::TestRequest::user_agent(
   cookie_jar => $jar,
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 # Retest with valid cookie - should NOT redirect
@@ -80,7 +80,7 @@ $url = '/secret_guest_user_uuid2/index.cgi';
 $jar->clear;
 $res = GET $url;
 ok t_cmp($res->code, 200, 'accepted without valid ticket');
-ok t_cmp($res->content, qr/^This is secret_guest_user_uuid, you are guest-12U/, 
+ok t_cmp($res->content, qr/^This is secret_guest_user_uuid, you are guest-12U/,
   'partial match ignored');
 
 # Standard size-limited UUID (%12U)

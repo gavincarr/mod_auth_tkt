@@ -535,7 +535,7 @@ parse_ticket(request_rec *r, char **magic, auth_tkt *parsed)
 
   /* See if there is a uid/data separator */
   sepidx = ap_ind(ticket, SEPARATOR);
-  if (sepidx == -1) {    
+  if (sepidx == -1) {
     /* Ticket either uri-escaped, base64-escaped, or bogus */
     if (strstr(ticket, SEPARATOR_HEX)) {
       ap_unescape_url(ticket);

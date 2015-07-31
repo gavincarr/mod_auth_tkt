@@ -1,16 +1,16 @@
 /* ====================================================================
  * Portions Copyright (c) 2001-2006 Open Fusion Pty Ltd (Australia).
- * All rights reserved. 
- * Portions Copyright (c) 2000 Liquid Digital Information Systems, Inc. 
- * All rights reserved. 
+ * All rights reserved.
+ * Portions Copyright (c) 2000 Liquid Digital Information Systems, Inc.
+ * All rights reserved.
  *
  * Portions of this software were written for Open Fusion Pty. Ltd.
  * by Gavin Carr and are hereby contributed to the Apache Software
  * Foundation for distribution under the Apache license, as follows.
  *
- * Portions of this software were written for Liquid Digital Information 
- * Systems, Inc. by Raimondas Kiveris and are hereby contributed to the 
- * Apache Software Foundation for distribution under the Apache license, 
+ * Portions of this software were written for Liquid Digital Information
+ * Systems, Inc. by Raimondas Kiveris and are hereby contributed to the
+ * Apache Software Foundation for distribution under the Apache license,
  * as follows.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -18,7 +18,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in

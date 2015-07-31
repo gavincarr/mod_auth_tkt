@@ -21,7 +21,7 @@
 /*
  * FILE:        sha2.h
  * AUTHOR:      Aaron D. Gifford <me@aarongifford.com>
- * 
+ *
  * A licence was granted to the ASF by Aaron on 4 November 2003.
  */
 

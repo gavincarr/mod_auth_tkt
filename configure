@@ -41,12 +41,12 @@ do
       --apachever=*)
 	  VERSION=$ac_optarg ;;
       --debug)
-#	  DEBUG="-g" 
-	  DEBUG="-g -O0 -Wall -ansi -pedantic -Wno-implicit-function-declaration -Wno-long-long" 
+#	  DEBUG="-g"
+	  DEBUG="-g -O0 -Wall -ansi -pedantic -Wno-implicit-function-declaration -Wno-long-long"
           ;;
       --debug-verbose)
           echo "--debug-verbose is no longer supported - use a 'TKTAuthDebug 2' directive in your config instead"
-	  DEBUG="-g" 
+	  DEBUG="-g"
           ;;
       -h | --help)
 	  usage; exit 0 ;;

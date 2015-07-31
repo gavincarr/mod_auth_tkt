@@ -19,7 +19,7 @@ plan tests => 10, need 'LWP', { "env variable MAT_TEST_TIMEOUTS not set" => $ENV
 # Turn off automatic redirection following
 Apache::TestRequest::user_agent(
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 ok 1;   # simple load test
@@ -42,7 +42,7 @@ $jar->set_cookie(1, 'auth_tkt', $ticket, '/', '.localdomain');
 Apache::TestRequest::user_agent(
   cookie_jar => $jar,
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 # Retest with our cookie - should NOT redirect
@@ -66,7 +66,7 @@ nap 20;
 $res = GET $url;
 ok t_cmp($res->code, 200, 'not redirected with ticket take 3');
 
-# Sleep for another 25 seconds and retry (timeout is 1 minute) - should be 
+# Sleep for another 25 seconds and retry (timeout is 1 minute) - should be
 #   redirected to TKTAuthTimeoutURL
 nap 25;
 $res = GET $url;

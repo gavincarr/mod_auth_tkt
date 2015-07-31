@@ -14,13 +14,13 @@ use lib "cgi";
 use Apache::AuthTkt;
 use File::Basename;
 
-plan tests => 9, need 'LWP', 
+plan tests => 9, need 'LWP',
   { "env variable MAT_TEST_TIMEOUTS not set" => $ENV{MAT_TEST_TIMEOUTS} };
 
 # Turn off automatic redirection following
 Apache::TestRequest::user_agent(
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 ok 1;   # simple load test
@@ -43,7 +43,7 @@ $jar->set_cookie(1, 'auth_tkt', $ticket, '/', '.localdomain');
 Apache::TestRequest::user_agent(
   cookie_jar => $jar,
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 # Retest with our cookie - should NOT redirect
@@ -70,7 +70,7 @@ $res = GET $url;
 ok t_cmp($res->code, 200, 'not redirected with ticket take 3');
 ok t_cmp($res->content, qr/^This is secret_timeout_guest_fallback, you are testuser/, 'user is testuser');
 
-# Sleep for another 25 seconds and retry (timeout is 1 minute) - should 
+# Sleep for another 25 seconds and retry (timeout is 1 minute) - should
 #   timeout, not be directed, and be reauthenticated as guest
 nap 25;
 $res = GET $url;

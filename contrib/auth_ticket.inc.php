@@ -25,9 +25,9 @@ $ENCRYPT_COOKIE = true;
 $SECRET_KEY_FILE = "/path/to/file.txt";
 
 // Initial seed for calls to rand
-if( !isset($SeedIsDone) ) { 
-    srand((double)microtime()*1000000); 
-    $SeedIsDone = true; 
+if( !isset($SeedIsDone) ) {
+    srand((double)microtime()*1000000);
+    $SeedIsDone = true;
 }
 
 //---------------------------------------------------------------
@@ -54,8 +54,8 @@ function getSecretKey() {
         // Cannot read key file
         stopOnError( "F0006" );
     }
-    
-    if( preg_match( "/^\s*$keyword\s+\"(.*?)\"/m", 
+
+    if( preg_match( "/^\s*$keyword\s+\"(.*?)\"/m",
                     $content, $matches ) ) {
         $secretKey = $matches[1];
     }
@@ -64,7 +64,7 @@ function getSecretKey() {
         // Key invalid or not found
         stopOnError( "F0007" );
     }
-    
+
     return( $secretKey );
 }
 
@@ -96,7 +96,7 @@ function stopOnError( $code ) {
 //---------------------------------------------------------------
 function getTKTHash( $ip, $user, $tokens, $data, $key, $base64 = false, $ts = "" ) {
 
-    // set the timestamp to now 
+    // set the timestamp to now
     // unless a time is specified
     if( $ts == "" ) {
         $ts = time();
@@ -108,12 +108,12 @@ function getTKTHash( $ip, $user, $tokens, $data, $key, $base64 = false, $ts = ""
     $digest = md5( $digest0 . $key );
 
     if( $tokens ){
-        $tkt = sprintf( "%s%08x%s!%s!%s", $digest, $ts, 
+        $tkt = sprintf( "%s%08x%s!%s!%s", $digest, $ts,
                         encode( $user, $ts, 0 ),
                         encode( $tokens, $ts, 4 ),
                         encode( $data, $ts, 8 ) );
     } else {
-        $tkt = sprintf( "%s%08x%s!%s", $digest, $ts, 
+        $tkt = sprintf( "%s%08x%s!%s", $digest, $ts,
                         encode( $user, $ts, 0 ),
                         encode( $data, $ts, 8 ) );
     }
@@ -147,7 +147,7 @@ function getTKTHash( $ip, $user, $tokens, $data, $key, $base64 = false, $ts = ""
 //---------------------------------------------------------------
 function encode( $data, $timestamp, $offset ) {
     $CHARS_TO_ENCODE = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.:";
-    $LENGTH = strlen( $CHARS_TO_ENCODE ); 
+    $LENGTH = strlen( $CHARS_TO_ENCODE );
     $md5key = md5( $timestamp . getSecretKey() );
     $encoded = "";
 
@@ -166,9 +166,9 @@ function encode( $data, $timestamp, $offset ) {
             // skip characters that are not in list to encode
             $encoded .= $data{$i};
         } else {
-            $newPos = ($pos + (hexdec( $md5key{($offset + $i)%strlen($md5key)} )*7)) % $LENGTH; 
+            $newPos = ($pos + (hexdec( $md5key{($offset + $i)%strlen($md5key)} )*7)) % $LENGTH;
             $encoded .= $CHARS_TO_ENCODE{$newPos};
-            // print $data{$i} . " -> $newPos " . $CHARS_TO_ENCODE{$newPos} . "<br>"; 
+            // print $data{$i} . " -> $newPos " . $CHARS_TO_ENCODE{$newPos} . "<br>";
         }
     }
     // print "<br>md5key = $md5key<br>data = $data<br>encoded = $encoded";

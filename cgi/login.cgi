@@ -1,26 +1,26 @@
 #!/usr/bin/perl -w
 #
-# mod_auth_tkt sample login script - runs as a vanilla CGI, under 
-#   mod_perl 1 via Apache::Registry, and under mod_perl2 via 
+# mod_auth_tkt sample login script - runs as a vanilla CGI, under
+#   mod_perl 1 via Apache::Registry, and under mod_perl2 via
 #   ModPerl::Registry.
 #
-# This script can run in a few different modes, depending on how it is 
-#   named. Copy the script to a cgi-bin area, and create appropriately 
-#   named symlinks to access the different behaviours. 
+# This script can run in a few different modes, depending on how it is
+#   named. Copy the script to a cgi-bin area, and create appropriately
+#   named symlinks to access the different behaviours.
 # Modes:
 #   - login mode (default): request a username and password and test via
-#     $AuthTktConfig::validate_sub - if successful, issue an auth ticket 
+#     $AuthTktConfig::validate_sub - if successful, issue an auth ticket
 #     and redirect to the back location
-#   - autologin mode ('autologin.cgi'): [typically used to allow tickets 
+#   - autologin mode ('autologin.cgi'): [typically used to allow tickets
 #     across multiple domains] if no valid auth ticket exists, redirect
-#     to the login (or guest) version; otherwise automatically redirect 
-#     to the back location passing the current auth ticket as a GET 
-#     argument. mod_auth_tkt (>= 1.3.8) will turn this new ticket into 
+#     to the login (or guest) version; otherwise automatically redirect
+#     to the back location passing the current auth ticket as a GET
+#     argument. mod_auth_tkt (>= 1.3.8) will turn this new ticket into
 #     an auth cookie for the new domain if none already exists.
 #   - guest mode ('guest.cgi'): [DEPRECATED - use TktAuthGuestLogin instead]
-#     automatically issues an auth ticket a special username (as defined in 
-#     $AuthTktConfig::guest_sub, default 'guest'), and redirect to the back 
-#     location 
+#     automatically issues an auth ticket a special username (as defined in
+#     $AuthTktConfig::guest_sub, default 'guest'), and redirect to the back
+#     location
 #
 
 use File::Basename;
@@ -82,12 +82,12 @@ my $redirected = 0;
 # Set the auth cookie and redirect to $back
 my $set_cookie_redirect = sub {
   my ($tkt, $back) = @_;
-  my @expires = $at->cookie_expires ? 
+  my @expires = $at->cookie_expires ?
     ( -expires => sprintf("+%ss", $at->cookie_expires) ) :
     ();
   my $cookie = CGI::Cookie->new(
     -name => $at->cookie_name,
-    -value => $tkt, 
+    -value => $tkt,
     -path => '/',
     -secure => $at->require_ssl,
     @expires,
@@ -113,11 +113,11 @@ my $set_cookie_redirect = sub {
     $back .= $at->cookie_name . '=' . $tkt;
   }
 
-  # For some reason, using a Location: header doesn't seem to then see the 
+  # For some reason, using a Location: header doesn't seem to then see the
   #   cookie, but a meta refresh one does - weird
   print $q->start_html(
     -head => meta({ -http_equiv => 'refresh', -content => "0;URL=$back" }),
-    ), 
+    ),
     $q->end_html;
   return 1;
 };
@@ -145,7 +145,7 @@ if (! $have_cookies) {
     print $q->start_html(
       -head => meta({
         -http_equiv => 'refresh', -content => ("0;URL=" . sprintf("%s%s%s?redirect=%s&%s=%s%s",
-          $location, $mode, $suffix, $self_redirect + 1, $at->back_arg_name, 
+          $location, $mode, $suffix, $self_redirect + 1, $at->back_arg_name,
           $back_esc || '', $extra))
     }));
     $redirected = 1;
@@ -177,7 +177,7 @@ unless ($fatal || $redirected) {
       if ($valid) {
 #       my $user_data = join(':', encrypt($password), time(), ($ip_addr ? $ip_addr : ''));
         my $user_data = join(':', time(), ($ip_addr ? $ip_addr : ''));    # Optional
-        my $tkt = $at->ticket(uid => $username, data => $user_data, 
+        my $tkt = $at->ticket(uid => $username, data => $user_data,
           ip_addr => $ip_addr, tokens => $tokens, debug => $AuthTktConfig::DEBUG);
         if (! @errors) {
           $redirected = $set_cookie_redirect->($tkt, $back);
@@ -273,7 +273,7 @@ EOD
 <table border="0" cellpadding="5">
 <tr><th>Username:</th><td><input type="text" name="username" /></td></tr>
 <tr><th>Password:</th><td><input type="password" name="password" /></td></tr>
-<tr><td colspan="2" align="center"> 
+<tr><td colspan="2" align="center">
 <input type="submit" value="Login" />
 </td></tr>
 </table>

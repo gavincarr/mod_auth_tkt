@@ -20,7 +20,7 @@ plan tests => 4, need_lwp;
 # Turn off automatic redirection following
 Apache::TestRequest::user_agent(
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 ok 1;   # simple load test
@@ -45,7 +45,7 @@ $jar->set_cookie(1, 'bad_auth_tkt',     'foobar_bad', '/', '.localdomain');
 Apache::TestRequest::user_agent(
   cookie_jar => $jar,
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 # Test good ticket - should NOT redirect

@@ -2,7 +2,7 @@ SECTION=3
 POD=mod_auth_tkt.pod
 MANPAGE=mod_auth_tkt.$(SECTION)
 
-include ../Makedefs 
+include ../Makedefs
 
 all: $(MANPAGE)
 

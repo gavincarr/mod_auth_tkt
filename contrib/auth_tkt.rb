@@ -19,11 +19,11 @@
 module AuthTkt
   # set path to auth_tkt config file, where TKTAuthSecret is set
   SECRET_KEY_FILE = "/path/to/file.conf";
-  
+
   # set root domain to be able to single sign on (SSO)
   # (access all subdomains with one valid ticket)
   DOMAIN = ".yourdomain.com"
-  
+
   # sets the auth_tkt cookie, returns the signed cookie string
   def set_auth_tkt_cookie(user, domain = nil, token_list = nil, user_data = nil, base64 = false)
     # get signed cookie string
@@ -40,14 +40,14 @@ module AuthTkt
     # return signed cookie
     return tkt_hash
   end
-  
+
   # destroys the auth_tkt, to log an user out
   def destroy_auth_tkt_cookie
     # reset ticket value of cookie, to log out even if deleting cookie fails
     cookies[:auth_tkt] = { :value => '', :expire => Time.at(0), :domain => DOMAIN }
     cookies.delete :auth_tkt
   end
-  
+
   # returns a string that contains the signed cookie content
   # data encryption is not implemented yet, ssl communication is
   # highly recommended, when tokens or user data will be used
@@ -61,27 +61,27 @@ module AuthTkt
     ip_timestamp = [ip2long(request.remote_ip), timestamp].pack("NN")
 
     # creating the cookie signature
-    digest0 = Digest::MD5.hexdigest(ip_timestamp + get_secret_key + user + 
+    digest0 = Digest::MD5.hexdigest(ip_timestamp + get_secret_key + user +
                                     "\0" + token_list + "\0" + user_data)
 
     digest = Digest::MD5.hexdigest(digest0 + get_secret_key)
-    
+
     # concatenating signature, timestamp and payload
-    cookie = digest + timestamp.to_hex + user 
+    cookie = digest + timestamp.to_hex + user
     if token_list
-      cookie += '!' + token_list 
+      cookie += '!' + token_list
     end
     cookie += '!' + user_data
-    
+
     # base64 encode cookie, if needed
     if base64
       require 'base64'
       cookie = Base64.b64encode(cookie).gsub("\n", '').strip
     end
-    
+
     return cookie
   end
-  
+
   # returns the shared secret string used to sign the cookie
   # read from the scret key file, returns empty string on errors
   def get_secret_key
@@ -97,8 +97,8 @@ module AuthTkt
     end
     secret_key
   end
-  
-  # function adapted according to php: generates an IPv4 Internet network address 
+
+  # function adapted according to php: generates an IPv4 Internet network address
   # from its Internet standard format (dotted string) representation.
   def ip2long(ip)
     long = 0

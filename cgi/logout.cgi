@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 #
 # mod_auth_tkt sample logout script
-# 
-# Note that this needs script needs to be available locally on all domains 
+#
+# Note that this needs script needs to be available locally on all domains
 #   if using multiple domains (unlike login.cgi, which only needs to exist
 #   on one domain).
 #
@@ -48,7 +48,7 @@ if ($back) {
 }
 
 # Logout by resetting the auth cookie
-my @cookies = cookie(-name => $at->cookie_name, -value => '', -expires => '-1h', 
+my @cookies = cookie(-name => $at->cookie_name, -value => '', -expires => '-1h',
     ($AUTH_DOMAIN ? (-domain => $AUTH_DOMAIN) : ()));
 push @cookies, map { cookie(-name => $_, -value => '', -expires => '-1h') } @AuthTktConfig::NUKE_COOKIES;
 

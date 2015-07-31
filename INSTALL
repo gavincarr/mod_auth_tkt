@@ -6,7 +6,7 @@ Requires: an apache with DSO support, either 1.3.x, 2.0.x, or 2.2.x.
   $ ./configure --apxs=/path/to/apxs
   $ make
   $ make test         # (can take a while due to timeout tests)
-  # make install 
+  # make install
 
 (Or install from the RPMs for RHEL/CentOS 4/5).
 
@@ -17,14 +17,14 @@ Basic Configuration
 
 1. Copy conf/02_auth_tkt.conf to an apache conf include directory like
    /etc/httpd/conf.d (or include explicitly from your httpd.conf),
-   and edit, UPDATING THE SHARED SECRET BEFORE YOU USE. 
+   and edit, UPDATING THE SHARED SECRET BEFORE YOU USE.
 
 
 2. If you want to use the standard mod_auth_tkt CGI scripts, copy the
    conf/auth_tkt_cgi.conf config to your apache conf include directory
    as well (e.g. /etc/httpd/conf.d), and edit. You must uncomment one
    of the three /var/www/auth sections there, depending on whether you
-   want to use mod_perl 2, mod_perl 1, or vanilla CGI. The mod_perl 2 
+   want to use mod_perl 2, mod_perl 1, or vanilla CGI. The mod_perl 2
    version is recommended if you have it.
 
 
@@ -34,17 +34,17 @@ Basic Configuration
      cp -rp cgi /var/www/auth
 
    CGI scripts are available in /usr/share/doc/mod_auth_tkt-<version>/cgi
-   when using the RPM, to copy somewhere manually, or you can install the 
+   when using the RPM, to copy somewhere manually, or you can install the
    mod_auth_tkt-cgi package:
 
      # Installs to /var/www/auth by default
-     rpm -Uvh mod_auth_tkt-cgi        
+     rpm -Uvh mod_auth_tkt-cgi
      # Install somewhere else
      rpm -Uvh --prefix=/var/www/cgi-bin mod_auth_tkt-cgi
 
-   The scripts requires perl and the CGI perl module. You will need to 
-   edit the /var/www/auth/AuthTktConfig.pm config file to define a 
-   username/password authentication function against your repository of 
+   The scripts requires perl and the CGI perl module. You will need to
+   edit the /var/www/auth/AuthTktConfig.pm config file to define a
+   username/password authentication function against your repository of
    choice (the example one uses a standard apache htpasswd file). You
    can also tweak a few other customisable settings there.
 
@@ -55,8 +55,8 @@ Basic Configuration
 3. If you're using mod_auth_tkt on the open internet (rather than on
    a private network) you should probably set 'TKTAuthIgnoreIP on', at
    least initially. This avoids a whole class of weird problems that
-   aren't necessarily obvious (ISP transparent proxies, for instance). 
-   If you have a very constrained set of users you may be able turn it 
+   aren't necessarily obvious (ISP transparent proxies, for instance).
+   If you have a very constrained set of users you may be able turn it
    off later after you've got everything working.
 
 
@@ -67,15 +67,15 @@ Advanced Configuration Options
 1. Multi-domain logins: although cookies are domain-specific,
    mod_auth_tkt now supports multi-domain logins and logouts by
    passing the authentication ticket via the URL to a new domain.
-   To setup multi-domain logins, one of your domains should be 
-   designated the primary domain, and your login and logout scripts 
+   To setup multi-domain logins, one of your domains should be
+   designated the primary domain, and your login and logout scripts
    should be configured as normal for that domain - test your primary
-   domain is working as desired. Then, if you are using the supplied 
-   CGI scripts, you should use 'autologin' mode for the secondary 
+   domain is working as desired. Then, if you are using the supplied
+   CGI scripts, you should use 'autologin' mode for the secondary
    domains, which basically just looks for an existing ticket (on the
    primary domain) and passes it via a URL parameter back to your
-   secondary domain. Autologin mode is configured by creating a 
-   symbolic link to 'login.cgi' called 'autologin.cgi' and using the 
+   secondary domain. Autologin mode is configured by creating a
+   symbolic link to 'login.cgi' called 'autologin.cgi' and using the
    autologin.cgi version in your TKTAuthLoginURL. Something like the
    following should then work for all your domains:
 
@@ -85,10 +85,10 @@ Advanced Configuration Options
       TKTAuthLoginURL https://www.mydomain.com/auth/autologin.cgi
       TKTAuthTimeoutMin 60
 
-   (Note that no TKTAuthDomain is set, because this fragment is being 
-    used for multiple domains. TKTAuthDomain defaults to the parent 
-    domain when undefined - .mydomain.com in this case - which is 
+   (Note that no TKTAuthDomain is set, because this fragment is being
+    used for multiple domains. TKTAuthDomain defaults to the parent
+    domain when undefined - .mydomain.com in this case - which is
     usually what you want.)
-   
+
 
 

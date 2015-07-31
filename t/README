@@ -16,7 +16,7 @@ Test Instructions
 3. To run a single unit test through gdb:
 
    # (make sure you've run with './configure --debug' for debug symbols)
-   ./TEST -start-httpd -one-process 
+   ./TEST -start-httpd -one-process
    # in another window
    gdb /usr/sbin/httpd PID
    # in test window

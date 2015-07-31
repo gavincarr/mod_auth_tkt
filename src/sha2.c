@@ -418,11 +418,11 @@ void mat_SHA256_Transform(SHA256_CTX* context, const sha2_word32* data) {
                 /* Part of the message block expansion: */
                 s0 = W256[(j+1)&0x0f];
                 s0 = sigma0_256(s0);
-                s1 = W256[(j+14)&0x0f]; 
+                s1 = W256[(j+14)&0x0f];
                 s1 = sigma1_256(s1);
 
                 /* Apply the SHA-256 compression function to update a..h */
-                T1 = h + Sigma1_256(e) + Ch(e, f, g) + K256[j] + 
+                T1 = h + Sigma1_256(e) + Ch(e, f, g) + K256[j] +
                      (W256[j&0x0f] += s1 + W256[(j+9)&0x0f] + s0);
                 T2 = Sigma0_256(a) + Maj(a, b, c);
                 h = g;
@@ -464,7 +464,7 @@ void mat_SHA256_Update(SHA256_CTX* context, const sha2_byte *data, size_t len) {
         /* Sanity check: */
         assert(context != (SHA256_CTX*)0 && data != (sha2_byte*)0);
 
-        usedspace = (unsigned int)((context->bitcount >> 3) 
+        usedspace = (unsigned int)((context->bitcount >> 3)
                                  % SHA256_BLOCK_LENGTH);
         if (usedspace > 0) {
                 /* Calculate how much free space is available in the buffer */
@@ -511,7 +511,7 @@ void mat_SHA256_Final(sha2_byte digest[], SHA256_CTX* context) {
 
         /* If no digest buffer is passed, we don't bother doing this: */
         if (digest != (sha2_byte*)0) {
-                usedspace = (unsigned int)((context->bitcount >> 3) 
+                usedspace = (unsigned int)((context->bitcount >> 3)
                                          % SHA256_BLOCK_LENGTH);
 #if !APR_IS_BIGENDIAN
                 /* Convert FROM host byte order */
@@ -789,7 +789,7 @@ void mat_SHA512_Update(SHA512_CTX* context, const sha2_byte *data, size_t len) {
         /* Sanity check: */
         assert(context != (SHA512_CTX*)0 && data != (sha2_byte*)0);
 
-        usedspace = (unsigned int)((context->bitcount[0] >> 3) 
+        usedspace = (unsigned int)((context->bitcount[0] >> 3)
                                  % SHA512_BLOCK_LENGTH);
         if (usedspace > 0) {
                 /* Calculate how much free space is available in the buffer */
@@ -830,7 +830,7 @@ void mat_SHA512_Update(SHA512_CTX* context, const sha2_byte *data, size_t len) {
 void mat_SHA512_Last(SHA512_CTX* context) {
         unsigned int    usedspace;
 
-        usedspace = (unsigned int)((context->bitcount[0] >> 3) 
+        usedspace = (unsigned int)((context->bitcount[0] >> 3)
                                  % SHA512_BLOCK_LENGTH);
 #if !APR_IS_BIGENDIAN
         /* Convert FROM host byte order */

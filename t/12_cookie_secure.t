@@ -25,7 +25,7 @@ my ($url, $res, $cookie);
 Apache::TestRequest::user_agent(
   cookie_jar => $jar,
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 # Test TKTAuthCookieSecure on

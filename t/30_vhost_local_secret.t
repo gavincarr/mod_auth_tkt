@@ -20,7 +20,7 @@ my $jar = HTTP::Cookies->new;
 Apache::TestRequest::user_agent(
   cookie_jar => $jar,
   requests_redirectable => 0,
-  reset => 1, 
+  reset => 1,
 );
 
 ok 1;   # simple load test
@@ -32,7 +32,7 @@ Apache::TestRequest::module($vhost);
 my $hostport = Apache::TestRequest::hostport($config);
 
 my $url = "http://$hostport/index.html";
-my $at = Apache::AuthTkt->new(conf => 't/conf/extra.conf', 
+my $at = Apache::AuthTkt->new(conf => 't/conf/extra.conf',
   secret => 'vhostlocalsecret');
 my $res = GET $url;
 my $ticket;

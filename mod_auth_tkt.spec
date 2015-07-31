@@ -21,7 +21,7 @@ BuildRequires: %{httpd}-devel
 
 %description
 mod_auth_tkt provides lightweight, repository-agnostic, ticket-based
-authentication for Apache. It implements a single-signon framework that 
+authentication for Apache. It implements a single-signon framework that
 works across multiple apache instances and multiple machines. The actual
 authentication requires a user-supplied CGI or script of some kind - see
 the mod_auth_tkt-cgi package for perl cgi versions.
@@ -139,7 +139,7 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 * Mon Oct 24 2005 Gavin Carr <gavin@openfusion.com.au> 2.0.0b7
 - Deprecate TKTAuthTimeoutMin, replacing with TKTAuthTimeout, using units like
   TKTAuthCookieExpires.
-- Split out TKTAuthCookieSecure functionality from TKTAuthRequireSSL (Larry 
+- Split out TKTAuthCookieSecure functionality from TKTAuthRequireSSL (Larry
   Lansing).
 - Add TKTAuthCookieExpires directive for guest cookies and refreshes.
 - Add TKTAuthGuestUser %U format support for UUIDs with Apache 2.
