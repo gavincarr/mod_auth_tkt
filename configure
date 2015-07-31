@@ -5,6 +5,7 @@
 
 # Defaults
 APXS=/usr/sbin/apxs
+test -x $APXS || APXS=/usr/bin/apxs
 test -x $APXS || unset APXS
 
 ME=`basename $0`
@@ -62,14 +63,15 @@ test -x $APXS || die "Error: missing apxs '$APXS' (use --apxs=/path/to/apxs)"
 # Get Apache version
 if [ -z "$VERSION" ]; then
   HTTPD=`$APXS -q SBINDIR`/`$APXS -q TARGET`
-  test -x $HTTPD || die "Error: cannot determine apache version (use --apachever=<1|2|2.2>)"
+  test -x $HTTPD || die "Error: cannot determine apache version (use --apachever=<1|2|2.2|2.4>)"
   VERSION=`$HTTPD -v | head -1 | sed -e 's/.*Apache\///' -e 's/^\([0-9]\.[0-9]\+\).*/\1/'`
 fi
 # Standardise
 test $VERSION = '2.0' && VERSION=2
 test $VERSION = '20'  && VERSION=2
 test $VERSION = '22'  && VERSION=2.2
-if [ $VERSION != '1' -a $VERSION != '2' -a $VERSION != '2.2' ]; then
+test $VERSION = '24'  && VERSION=2.4
+if [ $VERSION != '1' -a $VERSION != '2' -a $VERSION != '2.2' -a $VERSION != '2.4' ]; then
   die "Error: apache version '$VERSION' not supported"
 fi
 
