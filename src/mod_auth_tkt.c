@@ -1625,7 +1625,11 @@ static void
 auth_tkt_register_hooks (apr_pool_t *p)
 {
   ap_hook_post_config(auth_tkt_version, NULL, NULL, APR_HOOK_MIDDLE);
+#if AP_MODULE_MAGIC_AT_LEAST(20080403,1)
+  ap_hook_check_authn(auth_tkt_check, NULL, NULL, APR_HOOK_FIRST, AP_AUTH_INTERNAL_PER_CONF);
+#else
   ap_hook_check_user_id(auth_tkt_check, NULL, NULL, APR_HOOK_FIRST);
+#endif
 }
 
 /* Declare and populate the main module data structure */
