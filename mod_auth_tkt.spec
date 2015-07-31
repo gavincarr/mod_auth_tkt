@@ -2,8 +2,14 @@
 # Use "--define='apache 1'" to build a 'mod_auth_tkt1' package for apache1
 %define httpd httpd
 %define name mod_auth_tkt
+%if %{rhel} < 7
+%define apxs /usr/sbin/apxs
+%else
+%define apxs /usr/bin/apxs
+%endif
 %{?apache:%define httpd apache}
 %{?apache:%define name mod_auth_tkt1}
+%{?apache:%define apxs /usr/sbin/apxs1}
 
 %define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
 
@@ -40,15 +46,14 @@ Perl CGI scripts for use with mod_auth_tkt.
 %setup -n mod_auth_tkt-%{version}
 
 %build
-test %{httpd} == apache && APXS='--apxs=/usr/sbin/apxs1'
 test %{debug} == 1 && DEBUG='--debug'
 MOD_PERL=`rpm -q mod_perl | grep '^mod_perl' || /bin/true`
 if [ -n "$MOD_PERL" -a %{test} == 1 ]; then
-  ./configure --test $DEBUG
+  ./configure --apxs=%{apxs} --test $DEBUG
   make
   make test
 else
-  ./configure $APXS $DEBUG
+  ./configure --apxs=%{apxs} $DEBUG
   make
 fi
 
@@ -61,9 +66,9 @@ mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
 mkdir -p $RPM_BUILD_ROOT/var/www/auth
 #mkdir -p $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
 if [ %{httpd} == apache ]; then
-  /usr/sbin/apxs1 -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
+  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
 else
-  /usr/sbin/apxs -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
+  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
 fi
 install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
 install -m 644 conf/auth_tkt_cgi.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
@@ -74,7 +79,7 @@ cp -pr cgi/* $RPM_BUILD_ROOT/var/www/auth
 rm -rf $RPM_BUILD_ROOT/var/www/auth/Apache
 cp -pr contrib/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
 rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib/t
-cp -pr README* INSTALL LICENSE ChangeLog CREDITS $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}
+cp -pr README* INSTALL LICENSE CREDITS $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}
 cd doc
 make DESTDIR=$RPM_BUILD_ROOT install
 
