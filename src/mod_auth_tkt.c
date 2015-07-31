@@ -822,7 +822,12 @@ ticket_digest(request_rec *r, auth_tkt *parsed, unsigned int timestamp, const ch
   unsigned char *buf2 = apr_palloc(r->pool, sconf->digest_sz + strlen(secret));
   int len = 0;
   char *digest = NULL;
+#ifdef APACHE24
+  /* should this be useragent_ip instead of client_ip? */
+  char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->client_ip;
+#else
   char *remote_ip = conf->ignore_ip > 0 ? "0.0.0.0" : r->connection->remote_ip;
+#endif
   unsigned long ip;
   struct in_addr ia;
   char *d;
