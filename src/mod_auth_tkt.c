@@ -674,6 +674,10 @@ get_domain(request_rec *r, auth_tkt_dir_conf *conf)
   if (!domain) domain = (char *) apr_table_get(r->headers_in, "X-Forwarded-Host");
   if (!domain) domain = (char *) apr_table_get(r->headers_in, "Host");
   if (domain) {
+    char domain_copy[1000];
+    strcpy(domain_copy, domain);
+    domain = domain_copy;
+
     /* Ignore any trailing port in domain */
     if ((p = ap_strchr(domain, ':'))) {
       *p = '\0';
