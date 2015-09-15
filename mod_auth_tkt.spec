@@ -2,7 +2,7 @@
 # Use "--define='apache 1'" to build a 'mod_auth_tkt1' package for apache1
 %define httpd httpd
 %define name mod_auth_tkt
-%if %{rhel} < 7
+%if 0%{?rhel} && 0%{?rhel} < 7
 %define apxs /usr/sbin/apxs
 %else
 %define apxs /usr/bin/apxs
