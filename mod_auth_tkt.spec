@@ -2,21 +2,25 @@
 # Use "--define='apache 1'" to build a 'mod_auth_tkt1' package for apache1
 %define httpd httpd
 %define name mod_auth_tkt
+%{!?_pkgdocdir:%global _pkgdocdir %{_docdir}/%{name}-%{version}}
 %if 0%{?rhel} && 0%{?rhel} < 7
-%define apxs /usr/sbin/apxs
+%global apxs /usr/sbin/apxs
 %else
-%define apxs /usr/bin/apxs
+%global apxs /usr/bin/apxs
 %endif
+%{?_httpd_apxs:%global apxs %{_httpd_apxs}}
 %{?apache:%define httpd apache}
 %{?apache:%define name mod_auth_tkt1}
 %{?apache:%define apxs /usr/sbin/apxs1}
+%{!?_httpd_confdir:%global _httpd_confdir %{_sysconfdir}/%{httpd}/conf.d}
+%{!?_httpd_moddir:%global _httpd_moddir %{_libdir}/%{httpd}/modules}
 
 %define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
 Version: 2.3.99b1
-Release: 1%{?org_tag}%{?dist}
+Release: 2%{?org_tag}%{?dist}
 License: Apache
 Group: Applications/System
 Source: http://www.openfusion.com.au/labs/dist/mod_auth_tkt-%{version}.tar.gz
@@ -33,7 +37,7 @@ authentication requires a user-supplied CGI or script of some kind - see
 the mod_auth_tkt-cgi package for perl cgi versions.
 
 %package cgi
-Release: 1%{?org_tag}%{?dist}
+Release: 2%{?org_tag}%{?dist}
 Summary: CGI scripts for mod_auth_tkt apache authentication modules.
 Group: Applications/System
 Requires: %{name} = %{version}
@@ -49,37 +53,37 @@ Perl CGI scripts for use with mod_auth_tkt.
 test %{debug} == 1 && DEBUG='--debug'
 MOD_PERL=`rpm -q mod_perl | grep '^mod_perl' || /bin/true`
 if [ -n "$MOD_PERL" -a %{test} == 1 ]; then
-  ./configure --apxs=%{apxs} --test $DEBUG
+  ./configure --apxs=%{apxs} --mandir=%{_mandir} --test $DEBUG
   make
   make test
 else
-  ./configure --apxs=%{apxs} $DEBUG
+  ./configure --apxs=%{apxs} --mandir=%{_mandir} $DEBUG
   make
 fi
 
 %install
 test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d
-#mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
-mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
+mkdir -p $RPM_BUILD_ROOT%{_httpd_moddir}
+mkdir -p $RPM_BUILD_ROOT%{_httpd_confdir}
+#mkdir -p $RPM_BUILD_ROOT%{_pkgdocdir}/cgi
+mkdir -p $RPM_BUILD_ROOT%{_pkgdocdir}/contrib
 mkdir -p $RPM_BUILD_ROOT/var/www/auth
 #mkdir -p $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
 if [ %{httpd} == apache ]; then
-  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
+  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_httpd_moddir} src/mod_auth_tkt.so
 else
-  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
+  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_httpd_moddir} src/mod_auth_tkt.la
 fi
-install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
-install -m 644 conf/auth_tkt_cgi.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
+install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_httpd_confdir}
+install -m 644 conf/auth_tkt_cgi.conf $RPM_BUILD_ROOT%{_httpd_confdir}
 #cp cgi/Apache/* $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
-#cp -pr cgi/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
-#rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi/Apache
+#cp -pr cgi/* $RPM_BUILD_ROOT%{_pkgdocdir}/cgi
+#rm -rf $RPM_BUILD_ROOT%{_pkgdocdir}/cgi/Apache
 cp -pr cgi/* $RPM_BUILD_ROOT/var/www/auth
 rm -rf $RPM_BUILD_ROOT/var/www/auth/Apache
-cp -pr contrib/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
-rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib/t
-cp -pr README* INSTALL LICENSE CREDITS $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}
+cp -pr contrib/* $RPM_BUILD_ROOT%{_pkgdocdir}/contrib
+rm -rf $RPM_BUILD_ROOT%{_pkgdocdir}/contrib/t
+cp -pr README* INSTALL LICENSE CREDITS $RPM_BUILD_ROOT%{_pkgdocdir}
 cd doc
 make DESTDIR=$RPM_BUILD_ROOT install
 
@@ -88,20 +92,23 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%{_libdir}/%{httpd}
+%{_httpd_moddir}/*
 #%{perl_vendorlib}/Apache/AuthTkt.pm
-%doc /usr/share/doc/%{name}-%{version}
-%attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/02_auth_tkt.conf
-/usr/share/man/*/*
+%doc %{_pkgdocdir}
+%attr(0640,root,apache) %config(noreplace) %{_httpd_confdir}/02_auth_tkt.conf
+%{_mandir}/*/*
 
 %files cgi
 %defattr(-,root,root)
-%attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/auth_tkt_cgi.conf
+%attr(0640,root,apache) %config(noreplace) %{_httpd_confdir}/auth_tkt_cgi.conf
 %config(noreplace)/var/www/auth/AuthTktConfig.pm
 %config(noreplace)/var/www/auth/tkt.css
 /var/www/auth/*.cgi
 
 %changelog
+* Mon Nov 16 2015 Scott Shambarger <devel@shambarger.net> 2.3.99b1-2
+- Cleanup spec and configure files
+
 * Fri Jul 31 2015 Gavin Carr <gavin@openfusion.com.au> 2.3.99b1-1
 - Update to version 2.3.99b1, 2.4 release beta1.
 
@@ -133,7 +140,7 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 - Factor out cgi config settings into AuthTktConfig.pm.
 - Bump to version 2.0.0rc3.
 
-* Wed Nov 28 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc2
+* Tue Nov 28 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc2
 - Bump to version 2.0.0rc2.
 
 * Wed Nov 01 2006 Charlie Brady <charlie_brady@mitel.com> 2.0.0rc1-2

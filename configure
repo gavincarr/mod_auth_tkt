@@ -14,8 +14,20 @@ if [ $DIR = '.' ]; then
   DIR=`pwd`
 fi
 
+# find default MANDIR
+if [ -d /usr/share/man ]; then
+  MANDIR=/usr/share/man
+elif [ -d /usr/man ]; then
+  MANDIR=/usr/man
+elif [ "$MANPATH" != "" ]; then
+  # choose first dir in MANPATH
+  MANDIR="${MANPATH%%:*}"
+else
+  MANDIR=/usr/share/man
+fi
+
 usage() {
-  echo "usage: $ME [--apxs=/path/to/apxs] [--apachever=<1|2|2.2>] [--debug]"
+  echo "usage: $ME [--apxs=${APXS:-/path/to/apxs}] [--apachever=<1|2|2.2|2.4>] [--mandir=$MANDIR] [--debug]"
 }
 die() {
   echo $*
@@ -38,6 +50,10 @@ do
 	  APXS=$ac_optarg ;;
       --apxs)
 	  ac_prev=APXS ;;
+      --mandir=*)
+	  MANDIR=$ac_optarg ;;
+      --mandir)
+	  ac_prev=MANDIR ;;
       --apachever=*)
 	  VERSION=$ac_optarg ;;
       --debug)
@@ -94,16 +110,7 @@ else
   echo "TARGET = mod_auth_tkt.la" >> Makedefs
 fi
 echo "BASEDIR = $DIR" >> Makedefs
-
-if [ "$MANPATH" != "" ]; then
-    echo "MANPATH = $MANPATH" >> Makedefs
-else
-  if [ -d /usr/share/man ]; then
-    echo "MANPATH = /usr/share/man" >> Makedefs
-  else
-    echo "MANPATH = /usr/man" >> Makedefs
-  fi
-fi
+echo "MANPATH = $MANDIR" >> Makedefs
 
 MAT_VERSION=`cat VERSION`
 echo "MAT_VERSION = $MAT_VERSION" >> Makedefs
