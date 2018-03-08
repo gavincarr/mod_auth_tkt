@@ -142,6 +142,9 @@ sub init
     # Store/override from given args
     $self->{$_} = $arg{$_} foreach keys %arg;
 
+    # normalize digest type
+    $self->{digest_type} = uc($self->{digest_type});
+
     croak "[$me] bad constructor - 'secret' or 'conf' argument required"
         unless $self->{conf} || $self->{secret};
     croak "[$me] invalid digest_type '" . $self->{digest_type} . "'"
