@@ -42,11 +42,11 @@ my %ATTR = map { $_ => 1 } qw(
 );
 #my %TICKET_ARGS = map { $_ => 1 }
 
-# digest_type => [ module, function ]
+# digest_type => [ module, function, digest_length ]
 my %DIGEST_TYPE = (
-    MD5     => [ 'Digest::MD5', 'md5_hex' ],
-    SHA256  => [ 'Digest::SHA', 'sha256_hex' ],
-    SHA512  => [ 'Digest::SHA', 'sha512_hex' ],
+    MD5     => [ 'Digest::MD5', 'md5_hex', '32' ],
+    SHA256  => [ 'Digest::SHA', 'sha256_hex', '64' ],
+    SHA512  => [ 'Digest::SHA', 'sha512_hex', '128' ],
 );
 
 # Helper routine to convert time units into seconds
@@ -141,6 +141,9 @@ sub init
 
     # Store/override from given args
     $self->{$_} = $arg{$_} foreach keys %arg;
+
+    # normalize digest type
+    $self->{digest_type} = uc($self->{digest_type});
 
     croak "[$me] bad constructor - 'secret' or 'conf' argument required"
         unless $self->{conf} || $self->{secret};
@@ -327,7 +330,8 @@ sub parse_ticket
     return if $raw !~ m/!/;
 
     # Deconstruct
-    my ($digest,$ts,$uid,$extra) = ($raw =~ m/^(.{32})(.{8})(.+?)!(.*)$/);
+    my $digest_length = $DIGEST_TYPE{ $self->digest_type }->[2];
+    my ($digest,$ts,$uid,$extra) = ($raw =~ m/^(.{$digest_length})(.{8})(.+?)!(.*)$/);
     $parts->{digest} = $digest;
     $parts->{ts}  = hex($ts);
     $parts->{uid} = $uid;
