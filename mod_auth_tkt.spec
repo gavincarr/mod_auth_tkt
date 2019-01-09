@@ -1,29 +1,26 @@
 
-# Use "--define='apache 1'" to build a 'mod_auth_tkt1' package for apache1
-%define httpd httpd
-%define name mod_auth_tkt
-%if %{rhel} < 7
-%define apxs /usr/sbin/apxs
-%else
-%define apxs /usr/bin/apxs
-%endif
-%{?apache:%define httpd apache}
-%{?apache:%define name mod_auth_tkt1}
-%{?apache:%define apxs /usr/sbin/apxs1}
+%{!?_httpd_apxs:       %{expand: %%global _httpd_apxs       %%{_sbindir}/apxs}}
+%{!?_httpd_confdir:    %{expand: %%global _httpd_confdir    %%{_sysconfdir}/httpd/conf.d}}
+%{!?_httpd_moddir:    %{expand: %%global _httpd_moddir    %%{_libdir}/httpd/modules}}
 
-%define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
+%global name mod_auth_tkt
+
+%global _hardened_build 1
 
 Summary: Lightweight ticket-based authentication module for Apache.
 Name: %{name}
 Version: 2.3.99b1
-Release: 1%{?org_tag}%{?dist}
+Release: 3%{?dist}
 License: Apache
 Group: Applications/System
-Source: http://www.openfusion.com.au/labs/dist/mod_auth_tkt-%{version}.tar.gz
+Source: https://github.com/gavincarr/mod_auth_tkt/archive/%{version}/%{name}-%{version}.tar.gz
 URL: http://www.openfusion.com.au/labs/mod_auth_tkt/
-Buildroot: %_tmppath/%{name}-%{version}
-Requires: %{httpd}
-BuildRequires: %{httpd}-devel
+BuildRequires: httpd
+BuildRequires: httpd-devel
+BuildRequires: make
+BuildRequires: gcc
+BuildRequires: perl-podlators
+Requires: httpd
 
 %description
 mod_auth_tkt provides lightweight, repository-agnostic, ticket-based
@@ -33,75 +30,72 @@ authentication requires a user-supplied CGI or script of some kind - see
 the mod_auth_tkt-cgi package for perl cgi versions.
 
 %package cgi
-Release: 1%{?org_tag}%{?dist}
+Release: 3%{?dist}
 Summary: CGI scripts for mod_auth_tkt apache authentication modules.
 Group: Applications/System
-Requires: %{name} = %{version}
+BuildRequires: perl-generators
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description cgi
 Perl CGI scripts for use with mod_auth_tkt.
 
-
 %prep
-%setup -n mod_auth_tkt-%{version}
+%setup -q
 
 %build
 test %{debug} == 1 && DEBUG='--debug'
-MOD_PERL=`rpm -q mod_perl | grep '^mod_perl' || /bin/true`
-if [ -n "$MOD_PERL" -a %{test} == 1 ]; then
-  ./configure --apxs=%{apxs} --test $DEBUG
-  make
-  make test
-else
-  ./configure --apxs=%{apxs} $DEBUG
-  make
-fi
+./configure --apxs=%{_httpd_apxs} --mandir=%{_mandir} $DEBUG
+make
 
 %install
-test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d
-#mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
-mkdir -p $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
-mkdir -p $RPM_BUILD_ROOT/var/www/auth
-#mkdir -p $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
-if [ %{httpd} == apache ]; then
-  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.so
-else
-  %{apxs} -i -n "auth_tkt" -S LIBEXECDIR=$RPM_BUILD_ROOT%{_libdir}/%{httpd}/modules src/mod_auth_tkt.la
-fi
-install -m 644 conf/02_auth_tkt.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
-install -m 644 conf/auth_tkt_cgi.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{httpd}/conf.d/
-#cp cgi/Apache/* $RPM_BUILD_ROOT/%{perl_vendorlib}/Apache
-#cp -pr cgi/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi
-#rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/cgi/Apache
-cp -pr cgi/* $RPM_BUILD_ROOT/var/www/auth
-rm -rf $RPM_BUILD_ROOT/var/www/auth/Apache
-cp -pr contrib/* $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib
-rm -rf $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/contrib/t
-cp -pr README* INSTALL LICENSE CREDITS $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}
+mkdir -p %{buildroot}%{_httpd_moddir} \
+         %{buildroot}%{_httpd_confdir} \
+         %{buildroot}%{_pkgdocdir}/contrib \
+         %{buildroot}/var/www/auth \
+         %{buildroot}/%{perl_vendorlib}/Apache
+%{_httpd_apxs} -i -n "auth_tkt" -S LIBEXECDIR=%{buildroot}%{_httpd_moddir} src/mod_auth_tkt.la
+install -m 644 conf/02_auth_tkt.conf %{buildroot}%{_httpd_confdir}
+install -m 644 conf/auth_tkt_cgi.conf %{buildroot}%{_httpd_confdir}
+cp cgi/Apache/* %{buildroot}/%{perl_vendorlib}/Apache
+cp -pr cgi/* %{buildroot}/var/www/auth
+rm -rf %{buildroot}/var/www/auth/Apache
+cp -pr contrib/* %{buildroot}%{_pkgdocdir}/contrib
+rm -rf %{buildroot}%{_pkgdocdir}/contrib/t
+cp -pr README* INSTALL LICENSE CREDITS %{buildroot}%{_pkgdocdir}
 cd doc
-make DESTDIR=$RPM_BUILD_ROOT install
+%make_install
+
+%check
+MOD_PERL=`rpm -q mod_perl | grep '^mod_perl' || /bin/true`
+if [ -n "$MOD_PERL" -a %{test} == 1 ]; then
+  make test
+fi
 
 %clean
-test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%{_libdir}/%{httpd}
-#%{perl_vendorlib}/Apache/AuthTkt.pm
-%doc /usr/share/doc/%{name}-%{version}
-%attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/02_auth_tkt.conf
-/usr/share/man/*/*
+%{_httpd_moddir}/*
+%doc %{_pkgdocdir}
+%attr(0640,root,apache) %config(noreplace) %{_httpd_confdir}/02_auth_tkt.conf
+%{_mandir}/man3/*.3*
 
 %files cgi
 %defattr(-,root,root)
-%attr(0640,root,apache) %config(noreplace) %{_sysconfdir}/%{httpd}/conf.d/auth_tkt_cgi.conf
+%{perl_vendorlib}/Apache/AuthTkt.pm
+%attr(0640,root,apache) %config(noreplace) %{_httpd_confdir}/auth_tkt_cgi.conf
 %config(noreplace)/var/www/auth/AuthTktConfig.pm
 %config(noreplace)/var/www/auth/tkt.css
 /var/www/auth/*.cgi
 
 %changelog
+* Tue Jan 08 2019 Scott Shambarger <devel@shambarger.net> 2.3.99b1-3
+- Apply some Redhat packaging guidelines to spec
+
+* Mon Nov 16 2015 Scott Shambarger <devel@shambarger.net> 2.3.99b1-2
+- Cleanup spec and configure files
+
 * Fri Jul 31 2015 Gavin Carr <gavin@openfusion.com.au> 2.3.99b1-1
 - Update to version 2.3.99b1, 2.4 release beta1.
 
@@ -133,7 +127,7 @@ test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 - Factor out cgi config settings into AuthTktConfig.pm.
 - Bump to version 2.0.0rc3.
 
-* Wed Nov 28 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc2
+* Tue Nov 28 2006 Gavin Carr <gavin@openfusion.com.au> 2.0.0rc2
 - Bump to version 2.0.0rc2.
 
 * Wed Nov 01 2006 Charlie Brady <charlie_brady@mitel.com> 2.0.0rc1-2
