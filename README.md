@@ -1,3 +1,9 @@
+Notice
+------
+
+This software is unmaintained. Please use a fork or another project.
+
+
 Introduction
 ------------
 
@@ -205,8 +211,7 @@ Digital Information Systems, Inc. (see http://www.ldis.com/tkt_auth/),
 and further developed by Nelio Alves Pereira Filho
 (see http://www.ime.usp.br/~nelio/software/apache/). This version is
 the work of Gavin Carr of Open Fusion Pty. Ltd. (Australia), and the
-contributors cited in the CREDITS file in the distribution. The
-definitive site for this version is http://www.openfusion.com.au/labs.
+contributors cited in the CREDITS file in the distribution.
 
 THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
